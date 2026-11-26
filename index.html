@@ -167,23 +167,23 @@ function store(k,v){try{if(v==null)localStorage.removeItem(k);else localStorage.
 function load_(k){try{return localStorage.getItem(k)||""}catch(e){return""}}
 
 /* acct = ingelogd met account. owner = dat account is beheerder. Zonder account kan iemand via een deellink meedoen (mid). */
-var acct=false,owner=false,my={role:"",perms:{}},uid="",sess="",mid="",plist=[],users=[],lastInvite=null,cur=null,marks={},members={},myMarks={},lastV="",pending=0,ready=false,meSig="";
+var isAdmin=false,acct=false,owner=false,my={role:"",perms:{}},uid="",sess="",mid="",plist=[],users=[],lastInvite=null,cur=null,marks={},members={},myMarks={},lastV="",pending=0,ready=false,meSig="";
 var filter="all",q="",listF="",ovOpen=false;
 function can(p){return owner||!!(my.perms&&my.perms[p])}
 function whoText(){
   if(!acct)return;
   var n=load_("retourAcctName")||"jij";
-  $("who").textContent="Ingelogd als "+n+(owner?" (beheerder)":"")}
+  $("who").textContent="Ingelogd als "+n+(my.role==="beheerder"?" (beheerder)":my.role==="senior"?" (senior)":"")+(my.functie?" · "+my.functie:"")}
 function setMe(m){
   if(!m)return;
-  my=m;owner=m.role==="beheerder";store("retourMe",JSON.stringify(m));
+  my=m;owner=m.role==="beheerder"||m.role==="senior";isAdmin=m.role==="beheerder";store("retourMe",JSON.stringify(m));
   var s=JSON.stringify(m);if(s!==meSig){if(meSig)$("app").innerHTML="";meSig=s}
   whoText()}
 function ck(n){return"retourC_"+(acct?uid:mid)+"_"+n}
 function cset(n,v){try{localStorage.setItem(ck(n),JSON.stringify(v))}catch(e){try{cwipe()}catch(x){}}}
 function cget(n){try{var t=localStorage.getItem(ck(n));return t?JSON.parse(t):null}catch(e){return null}}
 function cwipe(){try{Object.keys(localStorage).forEach(function(k){if(k.indexOf("retourC_")===0)localStorage.removeItem(k)})}catch(e){}}
-function clearAuth(){cwipe();acct=false;owner=false;my={role:"",perms:{}};uid="";sess="";mid="";meSig="";lastInvite=null;
+function clearAuth(){cwipe();acct=false;owner=false;isAdmin=false;my={role:"",perms:{}};uid="";sess="";mid="";meSig="";lastInvite=null;
   ["retourUid","retourSess","retourMe","retourAcctName"].forEach(function(k){store(k,null)})}
 function onLogin(j){
   acct=true;uid=j.uid;sess=j.session;mid="u_"+uid;store("retourSetupDone","1");store("retourUid",uid);store("retourSess",sess);store("retourAcctName",j.name);
@@ -205,11 +205,13 @@ function scriptMsg(err){return err&&err.name==="Error"?err.message:errText(err)}
 function parseRoute(){var h=location.hash.slice(1);
   if(h==="beheer")return{k:"admin",pid:""};
   if(h==="retour")return{k:"retour",pid:""};
+  if(h==="team")return{k:"team",pid:""};
+  if(h==="tips")return{k:"tips",pid:""};
   if(h==="blog"||h.indexOf("blog/")===0)return{k:"blog",pid:"",klus:h.slice(5)};
   if(h.charAt(0)==="i"){var b=h.slice(1).split(".");return{k:"invite",pid:"",uid:b[0],token:b[1]||""}}
   if(h.charAt(0)==="j"){var a=h.slice(1).split(".");return{k:"join",pid:a[0],token:a[1]||""}}
   if(h.charAt(0)==="p")return{k:"owner",pid:h.slice(1)};return{k:"home",pid:""}}
-var kindOf={home:"home",retour:"retour",owner:"retour",admin:"admin",blog:"blog"};
+var kindOf={home:"home",retour:"retour",owner:"retour",admin:"admin",blog:"blog",team:"team",tips:"tips"};
 function curPid(){return parseRoute().pid}
 function getP(pid){return cur&&cur.pid===pid?cur.P:null}
 
@@ -388,6 +390,8 @@ function renderNow(){
     if(r.k==="owner"){if(cur&&cur.pid===r.pid)renderProject(cur.pid,cur.P);return}
     if(r.k==="admin"&&owner)return renderAdmin();
     if(r.k==="blog")return renderBlog();
+    if(r.k==="team")return renderTeam();
+    if(r.k==="tips")return renderTips();
     if(r.k==="retour")return renderHome();
     return renderStart()}
   if(cur)renderProject(cur.pid,cur.P)
@@ -485,19 +489,21 @@ var PERM_LABELS={import:"Retourlijsten importeren (nieuwe projecten en lijsten t
 function inviteLink(id,token){return location.href.split("#")[0]+"#i"+id+"."+token}
 function renderAdmin(){
   var stat={uitgenodigd:"Uitnodiging open",actief:"Actief",ingetrokken:"Ingetrokken"};
-  var h='<div class="row" style="margin-bottom:12px"><button id="back">← Alle projecten</button></div><h2>Gebruikers</h2>'+
+  var h='<div class="row" style="margin-bottom:12px"><button id="back">← Home</button></div><h2>Gebruikers</h2>'+
     '<section class="panel"><form id="invf" class="row"><input type="text" id="inm" class="grow" placeholder="Naam van de collega" required><button class="pri" type="submit">Uitnodiging maken</button></form><p class="mut" style="margin:8px 0 0">Je krijgt een link die je zelf appt of mailt. De collega kiest daarmee een gebruikersnaam en wachtwoord. Daarna stel je hieronder de rechten in.</p>';
   if(lastInvite)h+='<div class="panel" style="margin:12px 0 0"><b>Uitnodiging voor '+esc(lastInvite.name)+'</b><div class="row" style="margin-top:8px"><input type="text" id="invlnk" class="grow" readonly value="'+esc(lastInvite.link)+'" aria-label="Uitnodigingslink"><button id="cpinv">Kopieer link</button></div></div>';
   h+='</section><section class="panel">';
   if(!users.length)h+='<p class="mut" style="margin:0">Nog geen gebruikers.</p>';
   users.forEach(function(u){
-    var adm=u.role==="beheerder";
-    h+='<div class="usr" data-uid="'+u.id+'"><div><b>'+esc(u.name)+'</b> <span class="tag'+(u.status==="actief"?" ok":"")+'">'+esc(stat[u.status]||u.status)+'</span></div>'+(u.username?'<div class="mut">'+esc(u.username)+'</div>':'')+
-      '<div class="row" style="margin-top:8px"><label class="l" for="rl'+u.id+'">Rol</label><select id="rl'+u.id+'" data-role="1"><option value="medewerker"'+(adm?'':' selected')+'>Medewerker</option><option value="beheerder"'+(adm?' selected':'')+'>Beheerder (alle rechten)</option></select></div>';
-    if(adm)h+='<p class="mut" style="margin:6px 0 0">Beheerders kunnen alles: bevestigen, rest laten staan, extra retour afhandelen, gebruikers beheren, importeren, delen en verwijderen.</p>';
+    var adm=u.role==="beheerder",sen=u.role==="senior",lock=adm&&!isAdmin;
+    h+='<div class="usr" data-uid="'+u.id+'"><div><b>'+esc(u.name)+'</b> <span class="tag'+(u.status==="actief"?" ok":"")+'">'+esc(stat[u.status]||u.status)+'</span>'+(u.functie?' <span class="tag stay">'+esc(u.functie)+'</span>':'')+'</div>'+(u.username?'<div class="mut">'+esc(u.username)+'</div>':'')+
+      '<div class="row" style="margin-top:8px"><label class="l" for="rl'+u.id+'">Rol</label>'+(lock?'<span>Beheerder (alleen een beheerder kan dit aanpassen)</span>':'<select id="rl'+u.id+'" data-role="1"><option value="medewerker"'+(adm||sen?'':' selected')+'>Medewerker</option><option value="senior"'+(sen?' selected':'')+'>Senior (bijna alle rechten)</option>'+(isAdmin?'<option value="beheerder"'+(adm?' selected':'')+'>Beheerder (alle rechten)</option>':'')+'</select>')+'</div>';
+    if(adm)h+='<p class="mut" style="margin:6px 0 0">Beheerders kunnen alles, ook toegang intrekken en personen verwijderen.</p>';
+    else if(sen)h+='<p class="mut" style="margin:6px 0 0">Senioren kunnen alles wat een beheerder kan, behalve toegang intrekken, wachtwoorden resetten en personen verwijderen.</p>';
     else{h+='<div style="margin-top:6px"><div class="mut">Extra rechten naast scannen en afvinken:</div>';
       Object.keys(PERM_LABELS).forEach(function(k){h+='<label class="perm"><input type="checkbox" data-perm="'+k+'"'+(u.perms.indexOf(k)>=0?' checked':'')+'><span>'+PERM_LABELS[k]+'</span></label>'});h+='</div>'}
-    h+='<div class="row" style="margin-top:6px"><button class="sm" data-ua="reset|'+u.id+'">'+(u.status==="actief"?"Wachtwoord resetten":"Nieuwe uitnodigingslink")+'</button>'+(u.status==="actief"?'<button class="sm" data-ua="revoke|'+u.id+'">Toegang intrekken</button>':'')+'<button class="sm" data-ua="del|'+u.id+'">Verwijderen</button></div></div>'});
+    if(isAdmin)h+='<div class="row" style="margin-top:6px"><button class="sm" data-ua="reset|'+u.id+'">'+(u.status==="actief"?"Wachtwoord resetten":"Nieuwe uitnodigingslink")+'</button>'+(u.status==="actief"?'<button class="sm" data-ua="revoke|'+u.id+'">Toegang intrekken</button>':'')+'<button class="sm" data-ua="del|'+u.id+'">Verwijderen</button></div>';
+    h+='</div>'});
   $("app").innerHTML=h+'</section>';
   $("back").onclick=function(){location.hash="#home"};
   $("invf").onsubmit=function(e){e.preventDefault();var n=$("inm").value.trim();if(!n)return;
@@ -619,6 +625,8 @@ function stopCam(){torchOn=false;var tb=$("torch");if(tb)tb.classList.add("hide"
   var c=$("camwrap");if(c)c.classList.add("hide")}
 
 /* ---------- Inloggen, laden en routes ---------- */
+var FUNCTIES=["Teamlead","Op-ass","HAS","Senior HAS","Planner"];
+function fnSelect(id,sel){return'<select id="'+id+'" required style="width:100%"><option value="">Kies je functie…</option>'+FUNCTIES.map(function(f){return'<option'+(f===sel?" selected":"")+'>'+f+'</option>'}).join("")+'</select>'}
 function showLogin(msg){
   stopCam();$("who").textContent="Log in om te beginnen.";
   $("app").innerHTML='<div id="setupbox"></div><section class="panel"><h2>Inloggen</h2><form class="form" id="af"><label class="l" for="un">Gebruikersnaam</label><input type="text" id="un" autocomplete="username" autocapitalize="none" autocorrect="off" required><label class="l" for="pw2">Wachtwoord</label><input type="password" id="pw2" autocomplete="current-password" required><button class="pri" type="submit">Inloggen</button></form></section>';
@@ -629,9 +637,9 @@ function showLogin(msg){
   api("status",{},true).then(function(st){
     if(!st.needsSetup)store("retourSetupDone","1");
     if(acct||!st.needsSetup||!$("setupbox"))return;
-    $("setupbox").innerHTML='<section class="panel"><h2>Eerste keer: maak het beheerdersaccount aan</h2><form class="form" id="sf"><label class="l" for="sc">Installatiecode (SETUP_CODE uit het script)</label><input type="password" id="sc" autocomplete="off" required><label class="l" for="sn">Jouw naam</label><input type="text" id="sn" autocomplete="name" required><label class="l" for="su">Gebruikersnaam</label><input type="text" id="su" autocomplete="username" autocapitalize="none" autocorrect="off" required><label class="l" for="sp">Wachtwoord (minimaal 8 tekens)</label><input type="password" id="sp" autocomplete="new-password" minlength="8" required><button class="pri" type="submit">Beheerdersaccount aanmaken</button></form></section>';
+    $("setupbox").innerHTML='<section class="panel"><h2>Eerste keer: maak het beheerdersaccount aan</h2><form class="form" id="sf"><label class="l" for="sc">Installatiecode (SETUP_CODE uit het script)</label><input type="password" id="sc" autocomplete="off" required><label class="l" for="sn">Jouw naam</label><input type="text" id="sn" autocomplete="name" required><label class="l" for="su">Gebruikersnaam</label><input type="text" id="su" autocomplete="username" autocapitalize="none" autocorrect="off" required><label class="l" for="sf2">Jouw functie</label>'+fnSelect("sf2")+'<label class="l" for="sp">Wachtwoord (minimaal 8 tekens)</label><input type="password" id="sp" autocomplete="new-password" minlength="8" required><button class="pri" type="submit">Beheerdersaccount aanmaken</button></form></section>';
     $("sf").onsubmit=function(e){e.preventDefault();
-      api("setupAdmin",{setupCode:$("sc").value,name:$("sn").value,username:$("su").value,password:$("sp").value},true).then(onLogin).catch(function(er){console.error(er);toast(scriptMsg(er),"err")})}
+      api("setupAdmin",{setupCode:$("sc").value,name:$("sn").value,functie:$("sf2").value,username:$("su").value,password:$("sp").value},true).then(onLogin).catch(function(er){console.error(er);toast(scriptMsg(er),"err")})}
   }).catch(function(e){console.error(e);if(!acct)toast(errText(e),"err")})}
 function showName(r){
   $("who").textContent="Je bent uitgenodigd om mee te scannen.";
@@ -640,9 +648,9 @@ function showName(r){
     api("join",{pid:r.pid,token:r.token,name:n},true).then(function(j){mid=j.mid;store("mid_"+r.pid,mid);go()}).catch(function(){toast("Deze link werkt niet (meer). Vraag de beheerder om een nieuwe.","err")})}}
 function showAccept(r){
   $("who").textContent="Je bent uitgenodigd.";
-  $("app").innerHTML='<section class="panel"><h2>Maak je account aan</h2><form class="form" id="cf"><label class="l" for="cu">Gebruikersnaam (bijvoorbeeld je e-mailadres)</label><input type="text" id="cu" autocomplete="username" autocapitalize="none" autocorrect="off" required><label class="l" for="cp">Kies een wachtwoord (minimaal 8 tekens)</label><input type="password" id="cp" autocomplete="new-password" minlength="8" required><button class="pri" type="submit">Account aanmaken</button></form></section>';
+  $("app").innerHTML='<section class="panel"><h2>Maak je account aan</h2><form class="form" id="cf"><label class="l" for="cu">Gebruikersnaam (bijvoorbeeld je e-mailadres)</label><input type="text" id="cu" autocomplete="username" autocapitalize="none" autocorrect="off" required><label class="l" for="cf2">Jouw functie</label>'+fnSelect("cf2")+'<label class="l" for="cp">Kies een wachtwoord (minimaal 8 tekens)</label><input type="password" id="cp" autocomplete="new-password" minlength="8" required><button class="pri" type="submit">Account aanmaken</button></form></section>';
   $("cf").onsubmit=function(e){e.preventDefault();
-    api("acceptInvite",{uid:r.uid,token:r.token,username:$("cu").value,password:$("cp").value},true).then(function(j){
+    api("acceptInvite",{uid:r.uid,token:r.token,functie:$("cf2").value,username:$("cu").value,password:$("cp").value},true).then(function(j){
       clearAuth();try{history.replaceState(null,"",location.pathname+location.search)}catch(x){}onLogin(j)
     }).catch(function(err){console.error(err);toast(err.message==="auth"?"Deze uitnodiging is niet meer geldig. Vraag de beheerder om een nieuwe.":scriptMsg(err),"err")})}}
 function applyState(j){
@@ -671,6 +679,8 @@ async function load(){
     if(acct&&r.k!=="owner"){
       if(r.k==="home"){ready=true;render();return}
       if(r.k==="blog"){await loadBlog();return}
+      if(r.k==="tips"){ready=true;render();return}
+      if(r.k==="team"){var tc=cget("team");if(tc){team=tc;ready=true;render()}var tj=await api("team");team=tj.team;cset("team",team);ready=true;render();return}
       if(r.k==="admin"&&owner){users=(await api("users")).users;ready=true;render();return}
       if(!ready){var c=cget("list");if(c){plist=c;ready=true;render()}}
       var j=await api("list");setMe(j.me);plist=j.projects;lastV=j.v;ready=true;cset("list",plist);render();idle(prefetch)}
@@ -680,7 +690,7 @@ async function load(){
   }catch(e){handleErr(e)}}
 
 /* ---------- Menu ---------- */
-var NAV=[["home","🏠","Home","#home"],["retour","📦","Retour","#retour"],["blog","💬","Blog","#blog"],["admin","👥","Gebruikers","#beheer"]];
+var NAV=[["home","🏠","Home","#home"],["retour","📦","Retour","#retour"],["blog","💬","Blog","#blog"],["team","👥","Collega's","#team"],["tips","💡","Tips voor de app","#tips"],["admin","⚙️","Gebruikers","#beheer"]];
 function navRender(){
   var k=kindOf[parseRoute().k]||"home",h="";
   NAV.forEach(function(n){if(n[0]==="admin"&&!owner)return;h+='<a href="'+n[3]+'" class="'+(n[0]===k?"on":"")+'"><span class="ic">'+n[1]+'</span>'+n[2]+'</a>'});
@@ -709,6 +719,8 @@ function renderStart(){
     idle(function(){api("list").then(function(j){plist=j.projects;cset("list",plist);var o=plist.filter(function(p){return!p.closed}).length;if($("tr"))$("tr").textContent=o+(o===1?" lopend project":" lopende projecten");prefetch()}).catch(function(){})});
     api("blog").then(function(j){if($("tb"))$("tb").textContent=j.klussen.length+(j.klussen.length===1?" klus":" klussen")+" met tips en bevindingen"}).catch(function(){})}
   $("hello").textContent=g+(n?", "+n:"");
+  if(!my.functie&&!$("fnb")){var fb=document.createElement("section");fb.className="panel";fb.id="fnb";fb.innerHTML='<b>Kies je functie</b><p class="mut" style="margin:4px 0 8px">Zo zien collega\'s wie je bent.</p><div class="row">'+fnSelect("fnb2")+'<button class="pri" id="fnb3">Opslaan</button></div>';$("today").insertAdjacentElement("afterend",fb);
+    $("fnb3").onclick=function(){var v=$("fnb2").value;if(!v)return;api("setFunctie",{functie:v}).then(function(){my.functie=v;store("retourMe",JSON.stringify(my));whoText();fb.remove();toast("Functie opgeslagen","ok")}).catch(function(e){toast(scriptMsg(e),"err")})}}
   $("today").textContent=new Date().toLocaleDateString("nl-NL",{weekday:"long",day:"numeric",month:"long"})}
 function wxLoad(){
   var c=null;try{c=JSON.parse(localStorage.getItem("assiWx")||"null")}catch(e){}
@@ -755,6 +767,32 @@ function agDraw(j){
   el.innerHTML=h;
   $("agr").onclick=function(){agLoad(true)};
   $("agx").onclick=function(){if(confirm("Agenda ontkoppelen?"))api("clearCalendar").then(function(r){AG=r;cset("ag",r);agDraw(r)}).catch(function(e){toast(scriptMsg(e),"err")})}}
+
+/* ---------- Collega's ---------- */
+var team=[],teamF="";
+function renderTeam(){
+  var h='<div class="hero">Collega\'s</div><div class="mut" style="margin-bottom:10px">Iedereen met een account en zijn of haar functie.</div>';
+  h+='<div class="tabs"><button class="tab'+(teamF?"":" on")+'" data-tf="">Iedereen <span style="opacity:.7;margin-left:4px">'+team.length+'</span></button>'+FUNCTIES.map(function(f){var n=team.filter(function(x){return x.functie===f}).length;return n?'<button class="tab'+(teamF===f?" on":"")+'" data-tf="'+f+'">'+f+' <span style="opacity:.7;margin-left:4px">'+n+'</span></button>':""}).join("")+'</div>';
+  var list=team.filter(function(x){return!teamF||x.functie===teamF});
+  h+='<section class="panel">'+(list.length?list.map(function(x){
+    var me_=x.id===uid;
+    return'<div class="proj" style="cursor:default"><div class="t"><h2 style="margin:0">'+esc(x.name)+(me_?' <span class="mut" style="font-weight:400">(jij)</span>':'')+'</h2><div class="mut">'+(x.functie?esc(x.functie):"Functie nog niet gekozen")+'</div></div>'+(x.role==="beheerder"?'<span class="tag">Beheerder</span>':x.role==="senior"?'<span class="tag">Senior</span>':'')+'</div>'}).join(""):'<p class="mut" style="margin:0">Niemand met deze functie.</p>')+'</section>';
+  h+='<section class="panel"><b>Mijn functie</b><div class="row" style="margin-top:8px">'+fnSelect("myfn",my.functie)+'<button class="pri" id="myfnb">Opslaan</button></div></section>';
+  var a=$("app");if(a.getAttribute("data-t")!==h){a.innerHTML=h;a.setAttribute("data-t",h);
+    $("myfnb").onclick=function(){var v=$("myfn").value;if(!v)return toast("Kies een functie","err");api("setFunctie",{functie:v}).then(function(){my.functie=v;store("retourMe",JSON.stringify(my));whoText();var m=team.find(function(x){return x.id===uid});if(m)m.functie=v;a.setAttribute("data-t","");render();toast("Functie opgeslagen","ok")}).catch(function(e){toast(scriptMsg(e),"err")})}}}
+document.addEventListener("click",function(e){var t=e.target.closest&&e.target.closest("[data-tf]");if(t){teamF=t.getAttribute("data-tf");$("app").setAttribute("data-t","");renderTeam()}});
+
+/* ---------- Tips voor de app ---------- */
+function renderTips(){
+  if($("tipsend"))return;
+  $("app").innerHTML='<div class="hero">Tips voor de app</div><div class="mut" style="margin-bottom:10px">Heb je een idee, een wens of kloppen er dingen niet? Laat het weten. Je bericht gaat rechtstreeks naar Martijn.</div>'+
+  '<section class="panel"><div class="row"><select id="tipsoort" aria-label="Soort"><option value="tip">Tip</option><option value="wens">Wens of nieuwe functie</option><option value="fout">Er klopt iets niet</option></select></div>'+
+  '<textarea id="tiptxt" placeholder="Wat wil je kwijt?" maxlength="2000" style="margin-top:8px;min-height:140px"></textarea><div class="btns" style="margin-top:8px"><button class="pri" id="tipsend">Versturen</button></div></section>'}
+document.addEventListener("click",function(e){
+  if(!e.target||e.target.id!=="tipsend")return;
+  var v=$("tiptxt").value.trim();if(v.length<3)return toast("Schrijf eerst je tip of wens","err");
+  var b=e.target;b.disabled=true;b.textContent="Versturen…";
+  api("sendFeedback",{soort:$("tipsoort").value,tekst:v}).then(function(j){b.disabled=false;b.textContent="Versturen";$("tiptxt").value="";toast(j.mailed?"Bedankt! Je bericht is verstuurd.":"Bedankt! Bericht opgeslagen, maar de e-mail kon niet worden verstuurd.","ok")}).catch(function(er){b.disabled=false;b.textContent="Versturen";toast(scriptMsg(er),"err")})});
 
 /* ---------- Blog ---------- */
 var blog={klussen:[]},bposts=[],blogV="",bShown="",bOpenRep="",bDraft={},bAdd=false;
@@ -813,7 +851,7 @@ document.addEventListener("click",function(e){
   var dk=t.getAttribute("data-delklus");if(dk){if(confirm("Deze klus met alle berichten verwijderen?"))api("deleteKlus",{id:dk}).then(function(){bShown="";location.hash="#blog";load()}).catch(function(er){toast(scriptMsg(er),"err")});return}
 });
 function go(){
-  stopCam();cur=null;marks={};members={};myMarks={};lastV="";ready=false;$("app").innerHTML="";
+  stopCam();cur=null;marks={};members={};myMarks={};lastV="";ready=false;$("app").innerHTML="";$("app").removeAttribute("data-t");
   var r=parseRoute();
   $("out").classList.add("hide");navShow(false);
   if(r.k==="invite")return showAccept(r);
@@ -850,7 +888,7 @@ $("out").onclick=function(){clearAuth();go()};
 /* Elke 6 seconden kijken of er iets veranderd is (alleen als de pagina zichtbaar is). */
 setInterval(function(){
   if(document.hidden||pending>0||!ready)return;
-  var r=parseRoute();if(r.k==="admin"||r.k==="invite"||r.k==="home")return;
+  var r=parseRoute();if(r.k==="admin"||r.k==="invite"||r.k==="home"||r.k==="team"||r.k==="tips")return;
   var key=r.k==="blog"?"blog":(acct&&r.k!=="owner")?"_all":r.pid;if(!key)return;
   var cmp=r.k==="blog"?blogV:lastV;
   api("version",{key:key},true).then(function(j){if(j.v!==cmp&&pending===0)load()}).catch(function(){})},6000);
@@ -858,7 +896,7 @@ setInterval(function(){
 /* Start: opgeslagen sessie hergebruiken */
 if(load_("retourSess")&&load_("retourUid")){
   acct=true;uid=load_("retourUid");sess=load_("retourSess");mid="u_"+uid;
-  try{var sm=JSON.parse(load_("retourMe")||"null");if(sm){my=sm;owner=sm.role==="beheerder";meSig=JSON.stringify(sm)}}catch(e){}
+  try{var sm=JSON.parse(load_("retourMe")||"null");if(sm){my=sm;owner=sm.role==="beheerder"||sm.role==="senior";isAdmin=sm.role==="beheerder";meSig=JSON.stringify(sm)}}catch(e){}
 }
 go();
 })();
