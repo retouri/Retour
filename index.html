@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Assiapp"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="format-detection" content="telephone=no">
 <title>Assiapp</title>
 <link rel="preconnect" href="https://script.google.com">
 <style>
@@ -217,6 +218,40 @@ details.more{margin-top:8px}details.more summary{font-size:.84rem;color:var(--ac
 .vkbar{position:relative;height:8px;border-radius:4px;margin-top:5px;background:linear-gradient(90deg,#34c759,#ff9f0a 55%,#ff3b30)}
 .vkbar i{position:absolute;top:-4px;width:6px;height:16px;border-radius:3px;background:var(--ink);transform:translateX(-50%);box-shadow:0 0 0 2px var(--panel);transition:left .4s}
 .vkx{font-size:.74rem;color:var(--mut);margin-top:4px}
+
+/* ===== Responsive: telefoon, iPad staand en liggend, desktop ===== */
+header.brand,main{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{container-type:inline-size;container-name:mn}
+#app:has(#wx){display:grid;grid-template-columns:1fr;gap:0 14px;align-items:start}
+@container mn (min-width:680px){
+  #app:has(#wx){grid-template-columns:1fr 1fr}
+  #app:has(#wx)>.hero,#app:has(#wx)>#today,#app:has(#wx)>.tiles,#app:has(#wx)>#apb,#app:has(#wx)>#fnb{grid-column:1/-1}
+  .tiles{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  .days{gap:12px}
+}
+@media (min-width:700px){
+  header.brand .in,main{max-width:1040px}
+  main{padding-top:18px;padding-bottom:110px}
+  body{font-size:17px}
+  .hero,h1{font-size:2.4rem}
+  .panel{padding:20px}
+  li.it{padding:15px 18px}
+  .modal .box{max-width:520px}
+  #toast{top:calc(76px + env(safe-area-inset-top,0px))}
+}
+@media (min-width:1000px){
+  #nav{width:280px}
+  body.nav-on header.brand,body.nav-on main{margin-left:280px}
+  body.nav-on header.brand .in,body.nav-on main{max-width:1100px}
+  body.nav-on header.brand{padding-left:24px}
+  body.nav-on main{padding-left:28px;padding-right:28px}
+}
+@media (min-width:1400px){body.nav-on header.brand .in,body.nav-on main{max-width:1240px}}
+@media (min-width:700px) and (orientation:landscape) and (max-height:900px){main{padding-top:12px}}
+@media (hover:hover){button:hover,.btn:hover{filter:brightness(.96)}button.pri:hover{filter:brightness(1.08)}#navlinks a:not(.on):hover{background:color-mix(in srgb,var(--mut) 14%,transparent)}.proj:hover{background:color-mix(in srgb,var(--mut) 8%,var(--panel))}}
+@media (max-width:420px){.hero,h1{font-size:1.9rem}.panel{padding:14px}.tab{padding:6px 10px}}
+#nav .nb{padding-left:max(14px,env(safe-area-inset-left,0px))}
+#top{right:max(16px,env(safe-area-inset-right,0px))}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -242,7 +277,7 @@ function lib(n){if(LP[n])return LP[n];return LP[n]=new Promise(function(ok,no){v
 function idle(f){(window.requestIdleCallback||function(g){setTimeout(g,1500)})(f)}
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function norm(s){return String(s||"").toLowerCase().replace(/[^a-z0-9]/g,"")}
-var tt;function toast(t,k){var e=$("toast");e.textContent=t;e.className=k;clearTimeout(tt);tt=setTimeout(function(){e.className=""},3500)}
+var tt;function toast(t,k){if(k==="err")reportErr(t);var e=$("toast");e.textContent=t;e.className=k;clearTimeout(tt);tt=setTimeout(function(){e.className=""},3500)}
 if(!API_URL){$("who").textContent="Nog niet ingesteld.";$("app").innerHTML='<div class="panel"><p>Vul bovenin <b>index.html</b> de <b>API_URL</b> in. Zie README.md.</p></div>';return}
 function store(k,v){try{if(v==null)localStorage.removeItem(k);else localStorage.setItem(k,v)}catch(e){}}
 function load_(k){try{return localStorage.getItem(k)||""}catch(e){return""}}
@@ -289,11 +324,12 @@ function parseRoute(){var h=location.hash.slice(1);
   if(h==="team")return{k:"team",pid:""};
   if(h==="tips")return{k:"tips",pid:""};
   if(h==="overleg")return{k:"overleg",pid:""};
+  if(h==="appbouwer")return{k:"appbouwer",pid:""};
   if(h==="blog"||h.indexOf("blog/")===0)return{k:"blog",pid:"",klus:h.slice(5)};
   if(h.charAt(0)==="i"){var b=h.slice(1).split(".");return{k:"invite",pid:"",uid:b[0],token:b[1]||""}}
   if(h.charAt(0)==="j"){var a=h.slice(1).split(".");return{k:"join",pid:a[0],token:a[1]||""}}
   if(h.charAt(0)==="p")return{k:"owner",pid:h.slice(1)};return{k:"home",pid:""}}
-var kindOf={home:"home",retour:"retour",owner:"retour",admin:"admin",blog:"blog",team:"team",tips:"tips",overleg:"overleg"};
+var kindOf={home:"home",retour:"retour",owner:"retour",admin:"admin",blog:"blog",team:"team",tips:"tips",overleg:"overleg",appbouwer:"appbouwer"};
 function curPid(){return parseRoute().pid}
 function getP(pid){return cur&&cur.pid===pid?cur.P:null}
 
@@ -475,6 +511,7 @@ function renderNow(){
     if(r.k==="team")return renderTeam();
     if(r.k==="tips")return renderTips();
     if(r.k==="overleg")return renderOverleg();
+    if(r.k==="appbouwer")return isAdmin?renderBouwer():(location.hash="#home");
     if(r.k==="retour")return renderHome();
     return renderStart()}
   if(cur)renderProject(cur.pid,cur.P)
@@ -773,6 +810,7 @@ async function load(){
       if(r.k==="home"){ready=true;render();return}
       if(r.k==="blog"){await loadBlog();return}
       if(r.k==="tips"){ready=true;render();return}
+      if(r.k==="appbouwer"){if(isAdmin){try{flist=(await api("foutenList")).items}catch(e){if(e&&e.message==="auth")throw e;flist=[]}}ready=true;render();return}
       if(r.k==="overleg"){if(my.overleg){try{olist=(await api("overlegList")).items}catch(e){if(e&&e.message==="auth")throw e;olist=[];toast(scriptMsg(e),"err")}}ready=true;render();return}
       if(r.k==="team"){var tc=cget("team");if(tc){team=tc;ready=true;render()}var tj=await api("team");team=tj.team;cset("team",team);ready=true;render();return}
       if(r.k==="admin"&&owner){users=(await api("users")).users;ready=true;render();return}
@@ -784,10 +822,10 @@ async function load(){
   }catch(e){handleErr(e)}}
 
 /* ---------- Menu ---------- */
-var NAV=[["home","🏠","Home","#home"],["retour","📦","Retour","#retour"],["blog","💬","Blog","#blog"],["team","👥","Collega's","#team"],["tips","💡","Tips voor de app","#tips"],["overleg","🗣️","Werkoverleg","#overleg"],["admin","⚙️","Gebruikers","#beheer"]];
+var NAV=[["home","🏠","Home","#home"],["retour","📦","Retour","#retour"],["blog","💬","Blog","#blog"],["team","👥","Collega's","#team"],["tips","💡","Tips voor de app","#tips"],["overleg","🗣️","Werkoverleg","#overleg"],["appbouwer","🛠️","Appbouwer","#appbouwer"],["admin","⚙️","Gebruikers","#beheer"]];
 function navRender(){
   var k=kindOf[parseRoute().k]||"home",h="";
-  NAV.forEach(function(n){if(n[0]==="admin"&&!owner)return;h+='<a href="'+n[3]+'" class="'+(n[0]===k?"on":"")+'"><span class="ic">'+n[1]+'</span>'+n[2]+'</a>'});
+  NAV.forEach(function(n){if(n[0]==="admin"&&!owner)return;if(n[0]==="appbouwer"&&!isAdmin)return;h+='<a href="'+n[3]+'" class="'+(n[0]===k?"on":"")+'"><span class="ic">'+n[1]+'</span>'+n[2]+'</a>'});
   $("navlinks").innerHTML=h}
 function navShow(on){
   $("nav").classList.toggle("hide",!on);$("menu").classList.toggle("hide",!on);
@@ -854,8 +892,7 @@ function vkDraw(){
     lvNow=r>=0.85?0:r>=0.6?1:2;
     h+=vkMeter((1-r)/0.6,VKN[lvNow].toLowerCase(),"")}
   else{lvNow=vkEst(Date.now());
-    var why="";if(VK&&VK.nokey)why="verwachting op spitstijden";else if(VK&&VK.wegen&&VK.wegen.length){var f=VK.wegen.filter(function(w){return w.fout})[0];why="verwachting; live gegevens niet beschikbaar"+(f?" ("+esc(String(f.fout))+")":"")}else why="verwachting op spitstijden";
-    h+=vkMeter(lvPos[lvNow],"verwacht "+VKN[lvNow].toLowerCase(),why)}
+    h+=vkMeter(lvPos[lvNow],"verwacht "+VKN[lvNow].toLowerCase(),"")}
   var ev=((AG&&AG.events)||[]).filter(function(e){return!e.allDay&&e.s>Date.now()-900000&&new Date(e.s).toDateString()===new Date().toDateString()})[0];
   if(ev){var tm=new Date(ev.s).toLocaleTimeString("nl-NL",{hour:"2-digit",minute:"2-digit"}),lv=ok.length&&ev.s-Date.now()<3600000?lvNow:vkEst(ev.s-1800000);
     h+='<div class="vkn"><i style="background:'+VKC[lv]+'"></i>Eerste afspraak <b>'+tm+'</b> · onderweg verwacht <b>'+VKN[lv].toLowerCase()+'</b></div>'}
@@ -910,6 +947,22 @@ document.addEventListener("click",function(e){
   var v=$("tiptxt").value.trim();if(v.length<3)return toast("Schrijf eerst je tip of wens","err");
   var b=e.target;b.disabled=true;b.textContent="Versturen…";
   api("sendFeedback",{soort:$("tipsoort").value,tekst:v}).then(function(j){b.disabled=false;b.textContent="Versturen";$("tiptxt").value="";toast(j.mailed?"Bedankt! Je bericht is verstuurd.":"Bedankt! Bericht opgeslagen, maar de e-mail kon niet worden verstuurd.","ok")}).catch(function(er){b.disabled=false;b.textContent="Versturen";toast(scriptMsg(er),"err")})});
+
+/* ---------- Appbouwer (alleen beheerder): alle fouten ---------- */
+var flist=[],errSeen={};
+function reportErr(m){try{
+  if(!acct||!m)return;m=String(m).slice(0,400);var k=m.slice(0,80),n=Date.now();
+  if(errSeen[k]&&n-errSeen[k]<60000)return;errSeen[k]=n;
+  api("logFout",{bron:parseRoute().k,melding:m}).catch(function(){})}catch(e){}}
+window.addEventListener("error",function(e){reportErr("JS: "+(e.message||"fout")+(e.lineno?" (regel "+e.lineno+")":""))});
+window.addEventListener("unhandledrejection",function(e){var r=e.reason;reportErr("JS belofte: "+String(r&&r.message||r))});
+function renderBouwer(){
+  var h='<div class="hero">Appbouwer</div><div class="mut" style="margin-bottom:10px">Alle fouten van de app en het script, alleen zichtbaar voor jou als beheerder. De laatste 300 blijven bewaard.</div><div class="btns" style="margin:0 0 12px"><button id="fl-r">Verversen</button><button id="fl-w">Alles wissen</button></div>';
+  h+='<section class="panel">'+(flist.length?flist.map(function(x){return'<div class="post"><div class="meta"><b>'+esc(x.bron)+'</b>'+(x.naam?'<span>'+esc(x.naam)+'</span>':'')+'<span>'+new Date(x.tijd).toLocaleString("nl-NL",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})+'</span></div><div class="txt" style="font-size:.92rem">'+esc(x.melding)+'</div></div>'}).join(""):'<div class="mut">Geen fouten. 🎉</div>')+'</section>';
+  $("app").innerHTML=h}
+document.addEventListener("click",function(e){var t=e.target;if(!t||!t.id)return;
+  if(t.id==="fl-r")load();
+  if(t.id==="fl-w"&&confirm("Alle fouten wissen?")){flist=[];renderBouwer();api("foutenWis").catch(function(er){toast(scriptMsg(er),"err")})}});
 
 /* ---------- Werkoverleg ---------- */
 var olist=[],olDone=false;
@@ -1029,7 +1082,7 @@ $("out").onclick=function(){clearAuth();go()};
 /* Elke 6 seconden kijken of er iets veranderd is (alleen als de pagina zichtbaar is). */
 setInterval(function(){
   if(document.hidden||pending>0||!ready)return;
-  var r=parseRoute();if(r.k==="admin"||r.k==="invite"||r.k==="home"||r.k==="team"||r.k==="tips"||r.k==="overleg")return;
+  var r=parseRoute();if(r.k==="admin"||r.k==="invite"||r.k==="home"||r.k==="team"||r.k==="tips"||r.k==="overleg"||r.k==="appbouwer")return;
   var key=r.k==="blog"?"blog":(acct&&r.k!=="owner")?"_all":r.pid;if(!key)return;
   var cmp=r.k==="blog"?blogV:lastV;
   api("version",{key:key},true).then(function(j){if(j.v!==cmp&&pending===0)load()}).catch(function(){})},6000);
