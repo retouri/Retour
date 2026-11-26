@@ -73,6 +73,7 @@ video{width:100%;border-radius:8px;background:#000;max-height:50vh;object-fit:co
 #top.show{opacity:1;pointer-events:auto}
 input[type=file]{position:absolute;opacity:0;width:1px;height:1px}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
+.modal .box p{white-space:pre-line}
 .modal .box{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;max-width:420px;width:100%}
 .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
 table.ov{width:100%;border-collapse:collapse;font-size:.9rem}
@@ -188,7 +189,7 @@ function modal(title,text,btns){
   m.innerHTML='<div class="box"><h2>'+esc(title)+'</h2><p>'+esc(text)+'</p><div class="btns"></div></div>';
   var b=m.querySelector(".btns");
   btns.forEach(function(x){var e=document.createElement("button");e.textContent=x.t;if(x.pri)e.className="pri";e.onclick=function(){m.remove();if(x.fn)x.fn()};b.appendChild(e)});
-  document.body.appendChild(m);b.lastChild.focus()}
+  document.body.appendChild(m);var lb=b.lastChild;setTimeout(function(){try{lb.focus()}catch(e){}},400)}
 
 /* ---------- Laten staan en overzicht ---------- */
 function stayRest(pid,undo){
@@ -198,6 +199,26 @@ function stayRest(pid,undo){
   if(undo)return go();
   if(!c)return toast("Alles is al afgevinkt","ok");
   modal("Rest laten staan?",c+" artikelen ("+u+" stuks) zijn niet afgevinkt en blijven staan. Je kunt dit later ongedaan maken.",[{t:"Annuleren"},{t:"Laten staan",pri:true,fn:go}])}
+function fmtDT(ts){var d=new Date(Number(ts));return d.toLocaleDateString("nl-NL",{day:"numeric",month:"long",year:"numeric"})+" "+d.toLocaleTimeString("nl-NL",{hour:"2-digit",minute:"2-digit"})}
+function finishProject(pid){
+  var P=cur.P,open=[],units=0,waiting=0,o={};
+  P.items.forEach(function(i){var r=i.qty-me(pid,i.id);if(r>0){open.push({i:i,r:r});units+=r;o[i.id]=r;if(others(pid,i.id).length)waiting++}});
+  var ex=Object.keys(P.extra||{}).reduce(function(a,k){return a+(P.extra[k].n||0)},0);
+  var txt="";
+  if(open.length){
+    txt="Let op: "+open.length+(open.length===1?" artikel is":" artikelen zijn")+" nog niet gescand ("+units+" stuks):\n"+open.slice(0,5).map(function(x){return"• "+(x.i.desc||x.i.code)+" ("+x.r+"×)"}).join("\n")+(open.length>5?"\n… en "+(open.length-5)+" andere":"")+"\n\n";
+    if(waiting)txt+=waiting+" daarvan zijn wel door collega’s gescand, maar nog niet door jou bevestigd.\n\n";
+  }else txt="Alles is gescand.\n\n";
+  if(ex)txt+=ex+" stuks gaan extra retour.\n\n";
+  txt+="Na afronden kun je niets meer scannen of afvinken. Het overzicht als PDF blijft beschikbaar en je kunt het project heropenen.\n\nWeet je het zeker?";
+  var done=function(map){P.closed=Date.now();if(map)P.stay=o;ovOpen=true;render();
+    w("finishProject",{pid:pid,map:map?o:null});toast("Project afgerond","ok")};
+  var btns=[{t:"Annuleren"}];
+  if(open.length){btns.push({t:"Afronden zonder",fn:function(){done(false)}});btns.push({t:"Rest laten staan en afronden",pri:true,fn:function(){done(true)}})}
+  else btns.push({t:"Afronden",pri:true,fn:function(){done(false)}});
+  modal("Retourlijst afronden?",txt,btns)}
+function reopenProject(pid){
+  modal("Project heropenen?","Je kunt dan weer scannen en afvinken.",[{t:"Annuleren"},{t:"Heropenen",pri:true,fn:function(){cur.P.closed=0;render();w("reopenProject",{pid:pid});toast("Project heropend","ok")}}])}
 function lists(pid,P){
   var extra=Object.keys(P.extra||{}).map(function(k){var x=P.extra[k];return{key:k,code:x.code,desc:x.desc,n:x.n}}).filter(function(x){return x.n>0});
   var stay=P.items.filter(function(i){return(P.stay&&P.stay[i.id]||0)>0&&me(pid,i.id)<i.qty}).map(function(i){return{code:i.code,desc:i.desc,list:i.list||"",n:Math.min(P.stay[i.id],i.qty-me(pid,i.id))}});
@@ -221,6 +242,7 @@ function makePdf_(pid,P,L){
     head(true);
     d.setTextColor(11,29,51);d.setFont("helvetica","bold");d.setFontSize(13);
     d.text(d.splitTextToSize("Project: "+P.title,W-2*M),M,y);y+=9;
+    if(P.closed){d.setFont("helvetica","normal");d.setFontSize(10);d.setTextColor(60,75,95);d.text("Afgerond op "+fmtDT(P.closed),M,y);y+=8}
     function sect(title,rows,showList){
       if(y>250)np();
       d.setFont("helvetica","bold");d.setFontSize(12);d.setTextColor(6,34,74);d.text(title+" ("+rows.length+")",M,y);
@@ -248,7 +270,7 @@ function renderOv(pid,P){
   var b=$("ovbox");if(!b)return;if(!ovOpen){b.innerHTML="";return}
   var L=lists(pid,P);
   function tbl(t,a,ed){return'<h2 style="margin-top:14px">'+t+' ('+a.length+')</h2>'+(a.length?'<table class="ov">'+a.map(function(x){return'<tr><td>'+esc(x.code)+'</td><td>'+esc(x.desc)+'</td><td><b>'+x.n+'×</b></td>'+(ed?'<td style="white-space:nowrap"><button class="sm" data-xdec="'+esc(x.key)+'" aria-label="Eén minder">−1</button><button class="sm" data-xdel="'+esc(x.key)+'" aria-label="Verwijderen">Verwijder</button></td>':'')+'</tr>'}).join("")+'</table>':'<p class="mut">Geen.</p>')}
-  b.innerHTML=tbl("Extra retour",L.extra,true)+tbl("Blijft staan",L.stay)+'<div class="btns"><button class="pri" id="ovsave">Download als PDF</button><button id="ovcopy">Kopiëren</button></div>';
+  b.innerHTML=tbl("Extra retour",L.extra,!P.closed)+tbl("Blijft staan",L.stay)+'<div class="btns"><button class="pri" id="ovsave">Download als PDF</button><button id="ovcopy">Kopiëren</button></div>';
   $("ovsave").onclick=function(){makePdf(pid,P,L)};
   $("ovcopy").onclick=function(){try{navigator.clipboard.writeText(csv(L)).then(function(){toast("Overzicht gekopieerd","ok")},function(){toast("Kopiëren geblokkeerd","err")})}catch(e){toast("Kopiëren geblokkeerd","err")}}}
 
@@ -322,28 +344,28 @@ function renderHome(){
   h+='<section class="panel">';
   if(!ids.length)h+='<p class="mut" style="margin:0">'+(can("import")?"Nog geen projecten. Kies een pdf om te beginnen.":"Er zijn nog geen projecten.")+'</p>';
   ids.forEach(function(p){
-    h+='<div class="proj" data-open="'+p.id+'"><div class="t"><h2>'+esc(p.title)+'</h2><div class="mut">'+p.done+" van "+p.total+' bevestigd'+(p.lists.length>1?" · "+p.lists.length+" lijsten":"")+'</div></div>'+(can("verwijderen")?'<button class="x" data-delp="'+p.id+'" aria-label="Project verwijderen">✕</button>':'')+'</div>'});
+    h+='<div class="proj" data-open="'+p.id+'"><div class="t"><h2>'+esc(p.title)+'</h2><div class="mut">'+p.done+" van "+p.total+' bevestigd'+(p.lists.length>1?" · "+p.lists.length+" lijsten":"")+(p.closed?" · afgerond":"")+'</div></div>'+(can("verwijderen")?'<button class="x" data-delp="'+p.id+'" aria-label="Project verwijderen">✕</button>':'')+'</div>'});
   $("app").innerHTML=h+'</section>';
   var f=$("pdf");if(f)f.addEventListener("change",function(e){var fl=Array.prototype.slice.call(e.target.files);e.target.value="";importFiles(fl,null)});
 }
 function renderProject(pid,P){
   if(!$("list")){
     var link=location.href.split("#")[0]+"#j"+pid+"."+(P.token||"");
-    var addBtn='<label class="btn">Retourlijst toevoegen<input type="file" id="addpdf" accept="application/pdf" multiple></label>';
-    var tools=owner?'<section class="panel"><div class="row">'+addBtn+'<button id="stay">Rest laten staan</button><button id="unstay" class="hide">Laten staan ongedaan maken</button><button id="ov">Overzicht extra en blijft staan</button></div><div id="ovbox"></div></section>'
+    var addBtn='<label class="btn" id="addlbl">Retourlijst toevoegen<input type="file" id="addpdf" accept="application/pdf" multiple></label>';
+    var tools=owner?'<section class="panel"><div class="row">'+addBtn+'<button id="stay">Rest laten staan</button><button id="unstay" class="hide">Laten staan ongedaan maken</button><button id="ov">Overzicht extra en blijft staan</button><button class="pri" id="fin">Afronden</button></div><div id="ovbox"></div></section>'
       :(can("import")?'<section class="panel"><div class="row">'+addBtn+'</div></section>':'');
     var share=P.token?'<section class="panel"><div class="row"><input type="text" id="lnk" class="grow" readonly value="'+esc(link)+'" aria-label="Deellink voor collega\'s"><button id="cplnk">Kopieer deellink</button></div>'+(owner?'<div id="mem" class="mut" style="margin-top:8px"></div>':'')+'</section>':'';
-    $("app").innerHTML='<div class="row" style="margin-bottom:12px">'+(acct?'<button id="back">← Alle projecten</button>':'')+'</div><h2 id="ptitle"></h2>'+tools+
+    $("app").innerHTML='<div class="row" style="margin-bottom:12px">'+(acct?'<button id="back">← Alle projecten</button>':'')+'</div><h2 id="ptitle"></h2><div id="finbox"></div>'+tools+
     (owner?'':'<p class="mut">Jij scant en vinkt af. De beheerder bevestigt daarna zelf.</p>')+share+
-    '<section class="panel"><div class="row"><input type="text" id="code" class="grow" placeholder="Scan of typ artikelnummer, druk op Enter" autocomplete="off"><button class="pri" id="cam">QR-code scannen</button></div>'+
+    '<section class="panel" id="scanpanel"><div class="row"><input type="text" id="code" class="grow" placeholder="Scan of typ artikelnummer, druk op Enter" autocomplete="off"><button class="pri" id="cam">QR-code scannen</button></div>'+
     '<div id="camwrap" class="hide" style="margin-top:10px"><video id="vid" playsinline muted></video><div class="row" style="margin-top:8px"><button id="camstop">Camera sluiten</button><button id="torch" class="hide" type="button">Zaklamp aan</button><span class="mut" id="camnote"></span></div></div></section>'+
     '<section class="panel"><div class="bar"><i class="b1" id="f1"></i><i class="b2" id="f2"></i></div><div class="stat"><span id="cnt"></span><span id="wt"></span></div>'+
     '<div class="row" style="margin:12px 0"><input type="search" id="q" class="grow" placeholder="Zoek in lijst"><select id="lst" class="hide" aria-label="Filter op retourlijst"></select><button id="fAll">Alles</button><button id="fOpen">Open</button><button id="fDone">Afgevinkt</button></div><ul id="list"></ul></section>';
     if($("back"))$("back").onclick=function(){stopCam();location.hash=""};
     if($("cplnk"))$("cplnk").onclick=function(){var i=$("lnk");i.select();try{navigator.clipboard.writeText(i.value).then(function(){toast("Link gekopieerd","ok")},function(){toast("Selecteer de link en kopieer handmatig","err")})}catch(e){toast("Selecteer de link en kopieer handmatig","err")}};
     if($("addpdf"))$("addpdf").addEventListener("change",function(e){var fl=Array.prototype.slice.call(e.target.files);e.target.value="";importFiles(fl,pid)});
-    if($("stay")){$("stay").onclick=function(){stayRest(pid,false)};$("unstay").onclick=function(){stayRest(pid,true)};$("ov").onclick=function(){ovOpen=!ovOpen;render()}}
-    $("code").addEventListener("keydown",function(e){if(e.key==="Enter"){scan(this.value);this.value=""}});
+    if($("stay")){$("fin").onclick=function(){finishProject(pid)};$("stay").onclick=function(){stayRest(pid,false)};$("unstay").onclick=function(){stayRest(pid,true)};$("ov").onclick=function(){ovOpen=!ovOpen;render()}}
+    $("code").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();var vv=this.value;this.value="";scan(vv)}});
     $("torch").onclick=toggleTorch;$("cam").onclick=startCam;$("camstop").onclick=stopCam;
     $("q").addEventListener("input",function(){q=norm(this.value);render()});
     $("lst").addEventListener("change",function(){listF=this.value;render()});
@@ -356,7 +378,16 @@ function renderProject(pid,P){
       var it=cur.P.items.find(function(i){return i.id===id});setCount(pid,id,e.target.checked?it.qty:0)});
   }
   $("ptitle").textContent=P.title;
-  idle(findBol);if(!("BarcodeDetector" in window))idle(function(){lib("jsqr").catch(function(){})});
+  var cl=!!P.closed;
+  $("scanpanel").classList.toggle("hide",cl);
+  if($("addlbl"))$("addlbl").classList.toggle("hide",cl);
+  if(owner){$("stay").classList.toggle("hide",cl);$("fin").classList.toggle("hide",cl)}
+  var fbx=$("finbox"),fsig=cl?"c"+P.closed+(owner?"o":"n"):"";
+  if(fbx.getAttribute("data-s")!==fsig){fbx.setAttribute("data-s",fsig);
+    fbx.innerHTML=cl?'<section class="panel" style="border-top-color:var(--ok)"><b>Afgerond op '+esc(fmtDT(P.closed))+'</b><p class="mut" style="margin:6px 0 0">'+(owner?'Dit project is afgesloten. Hieronder kun je het overzicht van extra retour en wat blijft staan als PDF downloaden.':'Dit project is afgerond door de beheerder. Je kunt niets meer scannen.')+'</p>'+(owner?'<div class="btns"><button id="reopen">Project heropenen</button></div>':'')+'</section>':'';
+    if($("reopen"))$("reopen").onclick=function(){reopenProject(pid)}}
+  if(cl&&owner&&!ovOpen)ovOpen=true;
+  idle(findBol);loadCat();if(!("BarcodeDetector" in window))idle(function(){lib("jsqr").catch(function(){})});
   var fs2={fAll:"all",fOpen:"open",fDone:"done"};Object.keys(fs2).forEach(function(b){$(b).classList.toggle("pri",fs2[b]===filter)});
   var LN=listNames(P),multi=LN.length>1,sel=$("lst"),sig=LN.join("|");
   sel.classList.toggle("hide",!multi);
@@ -375,17 +406,17 @@ function renderProject(pid,P){
     oth.forEach(function(o){tags+='<span class="tag">'+esc(nameOf(o.u))+" "+Math.min(o.n,it.qty)+"/"+it.qty+(o.n>=it.qty?" ✓":"")+'</span>'});
     if(!owner&&conf)tags+='<span class="tag ok">Bevestigd door beheerder</span>';
     var st=(P.stay&&P.stay[it.id])||0;if(st>0&&!mineDone){stayN++;tags+='<span class="tag stay">Blijft staan: '+Math.min(st,it.qty-mine)+'×</span>'}
-    if(owner)Object.keys(marks).forEach(function(u){var n=overOf(u,it.id);if(n>0)tags+='<div class="tag bad">'+esc(nameOf(u))+': '+n+' te veel gescand<br><button class="sm" data-ov="'+u+'|'+it.id+'|back">Zet terug</button><button class="sm" data-ov="'+u+'|'+it.id+'|extra">Gaat extra retour</button></div>'});
+    if(owner&&!P.closed)Object.keys(marks).forEach(function(u){var n=overOf(u,it.id);if(n>0)tags+='<div class="tag bad">'+esc(nameOf(u))+': '+n+' te veel gescand<br><button class="sm" data-ov="'+u+'|'+it.id+'|back">Zet terug</button><button class="sm" data-ov="'+u+'|'+it.id+'|extra">Gaat extra retour</button></div>'});
     var sub="Artikelnr "+it.code;if(multi&&it.list)sub+=" · lijst "+it.list;
-    h+='<li class="it'+(isDone?" done":isWait?" wait":(st>0?" stay":""))+'" id="it'+it.id+'"><input type="checkbox" data-id="'+it.id+'" aria-label="Afvinken"'+(mineDone?" checked":"")+'><div class="t"><div class="c">'+esc(it.desc||it.code)+'</div>'+(it.desc2?'<div class="d2">'+esc(it.desc2)+'</div>':'')+'<div class="d">'+esc(sub)+'</div>'+(it.note?'<div class="n">'+esc(it.note)+'</div>':"")+tags+'</div>'+
-      (it.qty>1?'<div class="qty step"><button class="sm" data-step="'+it.id+'|-1" aria-label="Eén minder"'+(mine<=0?' disabled':'')+'>−</button><span>'+Math.min(mine,it.qty)+'/'+it.qty+'</span><button class="sm" data-step="'+it.id+'|1" aria-label="Eén meer"'+(mine>=it.qty?' disabled':'')+'>+</button></div>':"")+'</li>'});
+    h+='<li class="it'+(isDone?" done":isWait?" wait":(st>0?" stay":""))+'" id="it'+it.id+'"><input type="checkbox" data-id="'+it.id+'" aria-label="Afvinken"'+(mineDone?" checked":"")+(P.closed?" disabled":"")+'><div class="t"><div class="c">'+esc(it.desc||it.code)+'</div>'+(it.desc2?'<div class="d2">'+esc(it.desc2)+'</div>':'')+'<div class="d">'+esc(sub)+'</div>'+(it.note?'<div class="n">'+esc(it.note)+'</div>':"")+tags+'</div>'+
+      (it.qty>1?'<div class="qty step"><button class="sm" data-step="'+it.id+'|-1" aria-label="Eén minder"'+(mine<=0||P.closed?' disabled':'')+'>−</button><span>'+Math.min(mine,it.qty)+'/'+it.qty+'</span><button class="sm" data-step="'+it.id+'|1" aria-label="Eén meer"'+(mine>=it.qty||P.closed?' disabled':'')+'>+</button></div>':"")+'</li>'});
   $("list").innerHTML=h||'<li class="mut" style="padding:12px 4px">Niets gevonden met dit filter.</li>';
   var shown=P.items.filter(function(i){return!listF||i.list===listF}).length,tot=shown||1;
   $("f1").style.width=done/tot*100+"%";$("f2").style.width=wait/tot*100+"%";
   $("cnt").textContent=done+" van "+shown+(owner?" bevestigd":" afgevinkt")+(listF?" (lijst "+listF+")":"");
   var parts=[];if(owner&&wait)parts.push(wait+" door collega’s gescand, nog bevestigen");if(stayN)parts.push(stayN+" blijven staan");$("wt").textContent=parts.join(" · ");
   if(owner){
-    $("unstay").classList.toggle("hide",!(P.stay&&Object.keys(P.stay).length));
+    $("unstay").classList.toggle("hide",cl||!(P.stay&&Object.keys(P.stay).length));
     var mu=Object.keys(members).filter(function(u){return u.indexOf("u_")!==0});
     if($("mem"))$("mem").innerHTML=mu.length?'Collega’s via deellink: '+mu.map(function(u){return esc(members[u].name)+' <button class="x" data-delm="'+u+'" aria-label="Toegang van '+esc(members[u].name)+' intrekken">✕</button>'}).join(" "):"Nog geen collega’s via de deellink.";
     renderOv(pid,P)}
@@ -432,7 +463,7 @@ function idxFor(P){if(idxC&&idxC.items===P.items&&idxC.len===P.items.length)retu
   var by={},list=P.items.map(function(i){var n=norm(i.code);i.n=n;(by[n]=by[n]||[]).push(i);return i});
   idxC={items:P.items,len:P.items.length,byCode:by,list:list};return idxC}
 function scan(raw){
-  var v=norm(raw),pid=curPid(),P=getP(pid);if(!v||!P)return;
+  var v=norm(raw),pid=curPid(),P=getP(pid);if(!v||!P||P.closed)return;
   if(document.querySelector(".modal"))return;var now=Date.now();if(v===lastScan&&now-lastT<1100)return;lastScan=v;lastT=now;stopCam();if(v.indexOf("250903")>-1)party();
   var ix=idxFor(P),hit=null,i0,L=ix.byCode[v];
   if(L)for(i0=0;i0<L.length;i0++)if(me(pid,L[i0].id)<L[i0].qty){hit=L[i0];break}
@@ -447,9 +478,10 @@ function scan(raw){
       var nm=k.code+" "+k.desc;
       if(owner)modal("Te veel gescand",nm+" is al "+k.qty+"× afgevinkt. Dit is er één te veel.",[{t:"Zet terug",fn:function(){toast("Teruggezet, niet meegeteld","ok")}},{t:"Gaat extra retour",pri:true,fn:function(){addExtra(pid,norm(k.code),k.code,k.desc,1);toast("Genoteerd als extra retour","ok")}}]);
       else{modal("Te veel gescand",nm+" is al "+k.qty+"× gescand. Deze scan is niet meegeteld. De hoofdgebruiker beslist wat ermee gebeurt.",[{t:"Begrepen",pri:true}]);setOver(mid,pid,k.id,overOf(mid,k.id)+1)}
-    }else if(owner){
-      modal("Niet op de lijst",raw+" staat niet op deze retourlijst.",[{t:"Negeren"},{t:"Gaat extra retour",pri:true,fn:function(){addExtra(pid,norm(raw),raw,"Niet op de lijst",1);toast("Genoteerd als extra retour","ok")}}]);
-    }else toast("Niet op de lijst: "+raw,"err")}
+    }else{
+      var c=catLookup(raw),nm2=c?c.desc+(c.desc2?" · "+c.desc2:""):"Onbekend artikel (niet in de artikellijst)";
+      if(owner)modal("Niet op de lijst",(c?c.desc+(c.desc2?" ("+c.desc2+")":"")+"\n"+raw:raw)+"\nstaat niet op deze retourlijst.",[{t:"Negeren"},{t:"Gaat extra retour",pri:true,fn:function(){addExtra(pid,norm(raw),raw,nm2,1);toast("Genoteerd als extra retour: "+(c?c.desc:raw),"ok")}}]);
+      else toast("Niet op de lijst: "+(c?c.desc+" ("+raw+")":raw),"err")}}
 }
 /* Geluid: pling bij goed, lage dubbele piep bij fout */
 var AC=null;
@@ -462,6 +494,12 @@ function beep(ok){try{unlockAudio();if(!AC)return;
   if(ok){tone(988,0,.12,"sine",.35);tone(1319,.09,.22,"sine",.35)}
   else{tone(220,0,.16,"square",.18);tone(165,.19,.26,"square",.18)}}catch(e){}}
 /* Verrassing: artikel 250903 (alle volgnummers erachter tellen mee, ook als het niet op de lijst staat) laat 5 seconden kleine draadloze intercom-beltpacks vallen (eigen tekening, zonder merknaam) */
+/* Volledige NEP-artikellijst (artikelen.json): alleen om extra gescande artikelen bij naam te herkennen. */
+var CAT=null;
+function loadCat(){if(CAT!==null||loadCat.t)return;loadCat.t=1;
+  fetch("artikelen.json").then(function(r){return r.json()}).then(function(j){CAT=j}).catch(function(){loadCat.t=0})}
+function catLookup(raw){if(!CAT)return null;var t=String(raw||"").trim(),k=[t,t.split(/[-\s_\/]/)[0],t.replace(/[^0-9a-zA-Z]/g,"")],i;
+  for(i=0;i<k.length;i++){var h=CAT[k[i]];if(h)return{desc:h[0],desc2:h[1]}}return null}
 var partyOn=0,BOL="";
 function findBol(){if(BOL!==""||findBol.t)return;findBol.t=1;var n=["bolero.png","bolero.webp","bolero.jpg","bolero.jpeg","Bolero.png"],i=0;
   (function nx(){if(i>=n.length)return;var im=new Image();im.onload=function(){BOL=n[i]};im.onerror=function(){i++;nx()};im.src=n[i]})()}
@@ -549,7 +587,7 @@ function showAccept(r){
     }).catch(function(err){console.error(err);toast(err.message==="auth"?"Deze uitnodiging is niet meer geldig. Vraag de beheerder om een nieuwe.":scriptMsg(err),"err")})}}
 function applyState(j){
   if(j.me)setMe(j.me);
-  var P={title:j.project.title,token:j.project.token,items:j.items,done:j.done||{},extra:j.extra||{},stay:j.stay||{}};
+  var P={title:j.project.title,token:j.project.token,closed:j.project.closed||0,items:j.items,done:j.done||{},extra:j.extra||{},stay:j.stay||{}};
   cur={pid:j.project.id,P:P};members=j.members||{};
   if(owner){marks=j.marks||{};myMarks={}}else{marks={};myMarks=(j.marks&&j.marks[mid])||{}}
   lastV=j.v;ready=true;render()}
