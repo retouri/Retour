@@ -207,11 +207,12 @@ function parseRoute(){var h=location.hash.slice(1);
   if(h==="retour")return{k:"retour",pid:""};
   if(h==="team")return{k:"team",pid:""};
   if(h==="tips")return{k:"tips",pid:""};
+  if(h==="overleg")return{k:"overleg",pid:""};
   if(h==="blog"||h.indexOf("blog/")===0)return{k:"blog",pid:"",klus:h.slice(5)};
   if(h.charAt(0)==="i"){var b=h.slice(1).split(".");return{k:"invite",pid:"",uid:b[0],token:b[1]||""}}
   if(h.charAt(0)==="j"){var a=h.slice(1).split(".");return{k:"join",pid:a[0],token:a[1]||""}}
   if(h.charAt(0)==="p")return{k:"owner",pid:h.slice(1)};return{k:"home",pid:""}}
-var kindOf={home:"home",retour:"retour",owner:"retour",admin:"admin",blog:"blog",team:"team",tips:"tips"};
+var kindOf={home:"home",retour:"retour",owner:"retour",admin:"admin",blog:"blog",team:"team",tips:"tips",overleg:"overleg"};
 function curPid(){return parseRoute().pid}
 function getP(pid){return cur&&cur.pid===pid?cur.P:null}
 
@@ -392,6 +393,7 @@ function renderNow(){
     if(r.k==="blog")return renderBlog();
     if(r.k==="team")return renderTeam();
     if(r.k==="tips")return renderTips();
+    if(r.k==="overleg")return renderOverleg();
     if(r.k==="retour")return renderHome();
     return renderStart()}
   if(cur)renderProject(cur.pid,cur.P)
@@ -690,6 +692,7 @@ async function load(){
       if(r.k==="home"){ready=true;render();return}
       if(r.k==="blog"){await loadBlog();return}
       if(r.k==="tips"){ready=true;render();return}
+      if(r.k==="overleg"){if(my.overleg){try{olist=(await api("overlegList")).items}catch(e){if(e&&e.message==="auth")throw e;olist=[];toast(scriptMsg(e),"err")}}ready=true;render();return}
       if(r.k==="team"){var tc=cget("team");if(tc){team=tc;ready=true;render()}var tj=await api("team");team=tj.team;cset("team",team);ready=true;render();return}
       if(r.k==="admin"&&owner){users=(await api("users")).users;ready=true;render();return}
       if(!ready){var c=cget("list");if(c){plist=c;ready=true;render()}}
@@ -700,7 +703,7 @@ async function load(){
   }catch(e){handleErr(e)}}
 
 /* ---------- Menu ---------- */
-var NAV=[["home","🏠","Home","#home"],["retour","📦","Retour","#retour"],["blog","💬","Blog","#blog"],["team","👥","Collega's","#team"],["tips","💡","Tips voor de app","#tips"],["admin","⚙️","Gebruikers","#beheer"]];
+var NAV=[["home","🏠","Home","#home"],["retour","📦","Retour","#retour"],["blog","💬","Blog","#blog"],["team","👥","Collega's","#team"],["tips","💡","Tips voor de app","#tips"],["overleg","🗣️","Werkoverleg","#overleg"],["admin","⚙️","Gebruikers","#beheer"]];
 function navRender(){
   var k=kindOf[parseRoute().k]||"home",h="";
   NAV.forEach(function(n){if(n[0]==="admin"&&!owner)return;h+='<a href="'+n[3]+'" class="'+(n[0]===k?"on":"")+'"><span class="ic">'+n[1]+'</span>'+n[2]+'</a>'});
@@ -805,6 +808,29 @@ document.addEventListener("click",function(e){
   var b=e.target;b.disabled=true;b.textContent="Versturen…";
   api("sendFeedback",{soort:$("tipsoort").value,tekst:v}).then(function(j){b.disabled=false;b.textContent="Versturen";$("tiptxt").value="";toast(j.mailed?"Bedankt! Je bericht is verstuurd.":"Bedankt! Bericht opgeslagen, maar de e-mail kon niet worden verstuurd.","ok")}).catch(function(er){b.disabled=false;b.textContent="Versturen";toast(scriptMsg(er),"err")})});
 
+/* ---------- Werkoverleg ---------- */
+var olist=[],olDone=false;
+function renderOverleg(){
+  if($("olsend")&&!my.overleg)return;
+  var h='<div class="hero">Werkoverleg</div><div class="mut" style="margin-bottom:10px">Heb je een opmerking voor het werkoverleg? Vul die hier in. '+(my.overleg?'Jij kunt alle opmerkingen lezen.':'Alleen de beheerder, HAS, Senior HAS en Teamlead kunnen de opmerkingen lezen.')+'</div>'+
+  '<section class="panel"><textarea id="oltxt" placeholder="Wat wil je bespreken?" maxlength="2000" style="min-height:120px"></textarea><div class="btns" style="margin-top:8px"><button class="pri" id="olsend">Versturen</button></div></section>';
+  if(my.overleg){
+    var open=olist.filter(function(x){return!x.besproken}),dn=olist.filter(function(x){return x.besproken});
+    function item(x){return'<div class="post"><div class="meta"><b>'+esc(x.naam)+'</b><span>'+esc(x.functie||"")+'</span><span>'+ago(x.tijd)+'</span><button class="x" data-oldel="'+esc(x.id)+'" aria-label="Verwijderen">✕</button></div><div class="txt">'+esc(x.tekst)+'</div><div style="margin-top:8px"><button class="sm" data-oldone="'+esc(x.id)+'">'+(x.besproken?"Weer openzetten":"Besproken ✓")+'</button></div></div>'}
+    h+='<section class="panel"><h3 style="margin-top:0">Te bespreken ('+open.length+')</h3>'+(open.length?open.map(item).join(""):'<div class="mut">Niets open.</div>')+'</section>';
+    if(dn.length)h+='<section class="panel"><h3 style="margin-top:0">Besproken ('+dn.length+')</h3>'+dn.map(item).join("")+'</section>'}
+  var keep=$("oltxt")?$("oltxt").value:"";
+  $("app").innerHTML=h;if(keep)$("oltxt").value=keep}
+document.addEventListener("click",function(e){
+  var t=e.target;if(!t||!t.closest)return;
+  if(t.id==="olsend"){
+    var v=$("oltxt").value.trim();if(v.length<3)return toast("Schrijf eerst je opmerking","err");
+    t.disabled=true;t.textContent="Versturen…";
+    api("overlegAdd",{tekst:v}).then(function(){t.disabled=false;t.textContent="Versturen";$("oltxt").value="";toast("Bedankt! Je opmerking is opgeslagen voor het werkoverleg.","ok");if(my.overleg)load()}).catch(function(er){t.disabled=false;t.textContent="Versturen";toast(scriptMsg(er),"err")});return}
+  var d=t.getAttribute("data-oldone"),x=t.getAttribute("data-oldel");
+  if(d){var it=olist.filter(function(y){return y.id===d})[0];if(!it)return;it.besproken=!it.besproken;renderOverleg();api("overlegDone",{id:d,done:it.besproken}).catch(function(er){toast(scriptMsg(er),"err");load()})}
+  if(x){if(!confirm("Deze opmerking verwijderen?"))return;olist=olist.filter(function(y){return y.id!==x});renderOverleg();api("overlegDelete",{id:x}).catch(function(er){toast(scriptMsg(er),"err");load()})}});
+
 /* ---------- Blog ---------- */
 var blog={klussen:[]},bposts=[],blogV="",bShown="",bOpenRep="",bDraft={},bAdd=false;
 function ago(t){var s=Math.max(0,(Date.now()-t)/1000);if(s<60)return"zojuist";if(s<3600)return Math.floor(s/60)+" min geleden";if(s<86400)return Math.floor(s/3600)+" uur geleden";if(s<604800)return Math.floor(s/86400)+" dg geleden";return new Date(t).toLocaleDateString("nl-NL",{day:"numeric",month:"short"})}
@@ -900,7 +926,7 @@ $("out").onclick=function(){clearAuth();go()};
 /* Elke 6 seconden kijken of er iets veranderd is (alleen als de pagina zichtbaar is). */
 setInterval(function(){
   if(document.hidden||pending>0||!ready)return;
-  var r=parseRoute();if(r.k==="admin"||r.k==="invite"||r.k==="home"||r.k==="team"||r.k==="tips")return;
+  var r=parseRoute();if(r.k==="admin"||r.k==="invite"||r.k==="home"||r.k==="team"||r.k==="tips"||r.k==="overleg")return;
   var key=r.k==="blog"?"blog":(acct&&r.k!=="owner")?"_all":r.pid;if(!key)return;
   var cmp=r.k==="blog"?blogV:lastV;
   api("version",{key:key},true).then(function(j){if(j.v!==cmp&&pending===0)load()}).catch(function(){})},6000);
