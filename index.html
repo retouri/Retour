@@ -213,6 +213,10 @@ main{padding-top:10px}
 .vkn{margin-top:4px;font-size:.84rem;display:flex}
 .vkc i,.vkn i{width:9px;height:9px;border-radius:50%;flex:none;display:inline-block}
 details.more{margin-top:8px}details.more summary{font-size:.84rem;color:var(--acc);font-weight:500}
+.vkm{margin-top:8px}.vkt{display:flex;justify-content:space-between;font-size:.84rem}
+.vkbar{position:relative;height:8px;border-radius:4px;margin-top:5px;background:linear-gradient(90deg,#34c759,#ff9f0a 55%,#ff3b30)}
+.vkbar i{position:absolute;top:-4px;width:6px;height:16px;border-radius:3px;background:var(--ink);transform:translateX(-50%);box-shadow:0 0 0 2px var(--panel);transition:left .4s}
+.vkx{font-size:.74rem;color:var(--mut);margin-top:4px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -840,14 +844,20 @@ function vkEst(ts){var d=new Date(ts),day=d.getDay(),t=d.getHours()+d.getMinutes
   if((t>=7&&t<9.25)||(t>=16.25&&t<18.25))return 2;
   if((t>=6.25&&t<7)||(t>=9.25&&t<10)||(t>=15&&t<16.25)||(t>=18.25&&t<19))return 1;return 0}
 function vkLoad(){api("verkeer").then(function(j){VK=j;vkDraw()}).catch(function(e){if(e&&e.message==="auth")return handleErr(e)})}
+function vkMeter(pos,label,note){
+  return'<div class="vkm"><div class="vkt"><span>Verkeer Hilversum</span><b>'+label+'</b></div><div class="vkbar"><i style="left:'+Math.round(Math.max(0,Math.min(1,pos))*100)+'%"></i></div>'+(note?'<div class="vkx">'+note+'</div>':'')+'</div>'}
 function vkDraw(){
   var el=$("vk");if(!el)return;
-  var live=VK&&!VK.nokey&&VK.wegen&&VK.wegen.length,h='';
-  if(live){h+='<div class="vkr">'+VK.wegen.map(function(w){var n=w.fout?3:w.niveau;return'<span class="vkc"><i style="background:'+(w.fout?"#c7c7cc":VKC[n])+'"></i>'+esc(w.naam)+' <b>'+(w.fout?"onbekend":VKN[n].toLowerCase())+'</b></span>'}).join("")+'</div>'}
-  else{var e0=vkEst(Date.now());h+='<div class="vkr"><span class="vkc"><i style="background:'+VKC[e0]+'"></i>Johannes Geradtsweg · N525 · Kamerlingh Onnesweg: <b>verwacht '+VKN[e0].toLowerCase()+'</b></span></div>'}
+  var ok=VK&&!VK.nokey&&VK.wegen?VK.wegen.filter(function(w){return!w.fout&&w.vrij>0}):[],h='',lvPos=[0.1,0.5,0.9],lvNow;
+  if(ok.length){
+    var r=ok.reduce(function(a,w){return a+w.nu/w.vrij},0)/ok.length;r=Math.min(1,r);
+    lvNow=r>=0.85?0:r>=0.6?1:2;
+    h+=vkMeter((1-r)/0.6,VKN[lvNow].toLowerCase(),"")}
+  else{lvNow=vkEst(Date.now());
+    var why="";if(VK&&VK.nokey)why="verwachting op spitstijden";else if(VK&&VK.wegen&&VK.wegen.length){var f=VK.wegen.filter(function(w){return w.fout})[0];why="verwachting; live gegevens niet beschikbaar"+(f?" ("+esc(String(f.fout))+")":"")}else why="verwachting op spitstijden";
+    h+=vkMeter(lvPos[lvNow],"verwacht "+VKN[lvNow].toLowerCase(),why)}
   var ev=((AG&&AG.events)||[]).filter(function(e){return!e.allDay&&e.s>Date.now()-900000&&new Date(e.s).toDateString()===new Date().toDateString()})[0];
-  if(ev){var tm=new Date(ev.s).toLocaleTimeString("nl-NL",{hour:"2-digit",minute:"2-digit"}),arr=ev.s-1800000,lv=vkEst(arr);
-    if(live&&ev.s-Date.now()<3600000){lv=Math.max.apply(null,VK.wegen.map(function(w){return w.fout?0:w.niveau}))}
+  if(ev){var tm=new Date(ev.s).toLocaleTimeString("nl-NL",{hour:"2-digit",minute:"2-digit"}),lv=ok.length&&ev.s-Date.now()<3600000?lvNow:vkEst(ev.s-1800000);
     h+='<div class="vkn"><i style="background:'+VKC[lv]+'"></i>Eerste afspraak <b>'+tm+'</b> · onderweg verwacht <b>'+VKN[lv].toLowerCase()+'</b></div>'}
   el.innerHTML=h}
 function agLoad(fresh){
