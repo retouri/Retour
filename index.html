@@ -201,6 +201,18 @@ li.it input[type=checkbox]:checked::after{content:"";position:absolute;left:8px;
 .sk{font-weight:600;letter-spacing:.02em}
 #top{background:color-mix(in srgb,var(--panel) 80%,transparent);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);color:var(--acc);box-shadow:0 2px 12px rgba(0,0,0,.18)}
 main{padding-top:10px}
+
+.wxh{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.wxh h2{margin:0;font-size:1.05rem}
+.wx{display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap}
+.wx .big{font-size:1.6rem;line-height:1}.wx .tmp{font-size:1.5rem;font-weight:700;letter-spacing:-.03em}
+.wx .mut{font-size:.82rem}
+#wx{padding:12px 14px;margin-bottom:10px}#ag{padding:12px 14px}
+.vkr{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:8px;font-size:.84rem}
+.vkc,.vkn{display:inline-flex;align-items:center;gap:6px}
+.vkn{margin-top:4px;font-size:.84rem;display:flex}
+.vkc i,.vkn i{width:9px;height:9px;border-radius:50%;flex:none;display:inline-block}
+details.more{margin-top:8px}details.more summary{font-size:.84rem;color:var(--acc);font-weight:500}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -793,7 +805,7 @@ function renderStart(){
     '<section class="panel" id="wx"><h2>Weer Mediapark Hilversum</h2><div class="mut">Laden…</div></section>'+
     '<section class="panel" id="ag"><h2>Mijn agenda</h2><div class="mut">Laden…</div></section>'+
     '<div class="tiles"><a class="tile" href="#retour"><span class="ic">📦</span>Retour<span class="mut" id="tr">Retourlijsten scannen en afvinken</span></a><a class="tile" href="#blog"><span class="ic">💬</span>Blog<span class="mut" id="tb">Tips en bevindingen per klus</span></a></div>';
-    wxLoad();agLoad(false);
+    wxLoad();agLoad(false);vkLoad();setInterval(function(){if(!document.hidden&&$("vk"))vkLoad()},300000);
     idle(function(){api("list").then(function(j){plist=j.projects;cset("list",plist);var o=plist.filter(function(p){return!p.closed}).length;if($("tr"))$("tr").textContent=o+(o===1?" lopend project":" lopende projecten");prefetch()}).catch(function(){})});
     api("blog").then(function(j){if($("tb"))$("tb").textContent=j.klussen.length+(j.klussen.length===1?" klus":" klussen")+" met tips en bevindingen"}).catch(function(){})}
   $("hello").textContent=g+(n?", "+n:"");
@@ -810,7 +822,7 @@ function wxLoad(){
     .catch(function(){if(!c&&$("wx"))$("wx").innerHTML='<h2>Weer Mediapark Hilversum</h2><div class="mut">Het weer kon niet worden opgehaald.</div>'})}
 function wxDraw(d){
   var el=$("wx");if(!el||!d.current)return;
-  var cu=d.current,w=wmo(cu.weather_code),h='<h2>Weer Mediapark Hilversum</h2><div class="wx"><div class="big">'+w[0]+'</div><div><div class="tmp">'+Math.round(cu.temperature_2m)+'°</div><div class="mut">'+w[1]+' · voelt als '+Math.round(cu.apparent_temperature)+'°</div></div><div class="mut" style="margin-left:auto;text-align:right">Wind '+Math.round(cu.wind_speed_10m)+' km/u<br>Vlagen '+Math.round(cu.wind_gusts_10m)+' km/u</div></div>';
+  var cu=d.current,w=wmo(cu.weather_code),h='<div class="wxh"><h2>Weer en verkeer · Mediapark</h2><span class="mut">Wind '+Math.round(cu.wind_speed_10m)+' km/u</span></div><div class="wx"><span class="big">'+w[0]+'</span><span class="tmp">'+Math.round(cu.temperature_2m)+'°</span><span class="mut">'+w[1]+' · voelt als '+Math.round(cu.apparent_temperature)+'° · vlagen '+Math.round(cu.wind_gusts_10m)+'</span></div><div id="vk"></div>';
   var warn=[];
   if(cu.wind_gusts_10m>=50)warn.push("Veel wind: let op bij buiten werken en opbouw");
   var hs=d.hourly,now=Date.now(),idx=[],i;
@@ -818,9 +830,25 @@ function wxDraw(d){
   if(idx.some(function(i){return hs.precipitation_probability[i]>=60}))warn.push("Kans op regen de komende uren");
   if(cu.temperature_2m<=1)warn.push("Vorstkans: let op gladheid");
   if(warn.length)h+='<div class="warn">⚠️ '+warn.join(" · ")+'</div>';
-  h+='<div class="hrs">'+idx.map(function(i){var t=new Date(hs.time[i]);return'<div class="hr"><div>'+String(t.getHours()).padStart(2,"0")+':00</div><div class="e">'+wmo(hs.weather_code[i])[0]+'</div><b>'+Math.round(hs.temperature_2m[i])+'°</b><div class="mut">'+(hs.precipitation_probability[i]||0)+'%</div></div>'}).join("")+'</div>';
+  h+='<details class="more"><summary>Meer weer</summary><div class="hrs">'+idx.map(function(i){var t=new Date(hs.time[i]);return'<div class="hr"><div>'+String(t.getHours()).padStart(2,"0")+':00</div><div class="e">'+wmo(hs.weather_code[i])[0]+'</div><b>'+Math.round(hs.temperature_2m[i])+'°</b><div class="mut">'+(hs.precipitation_probability[i]||0)+'%</div></div>'}).join("")+'</div>';
   var dd=d.daily;h+='<div class="days">'+[1,2,3].map(function(i){var t=new Date(dd.time[i]);return'<div class="dy"><b>'+t.toLocaleDateString("nl-NL",{weekday:"short",day:"numeric"})+'</b><br>'+wmo(dd.weather_code[i])[0]+' '+Math.round(dd.temperature_2m_max[i])+'° / '+Math.round(dd.temperature_2m_min[i])+'°<br><span class="mut">regen '+(dd.precipitation_probability_max[i]||0)+'%</span></div>'}).join("")+'</div>';
-  h+='<div class="mut" style="margin-top:10px;font-size:.78rem">Bron: Open-Meteo · zon op '+dd.sunrise[0].slice(11)+' · onder '+dd.sunset[0].slice(11)+'</div>';
+  h+='<div class="mut" style="margin-top:10px;font-size:.78rem">Bron: Open-Meteo · zon op '+dd.sunrise[0].slice(11)+' · onder '+dd.sunset[0].slice(11)+'</div></details>';
+  el.innerHTML=h;vkDraw()}
+var VK=null,VKN=["Rustig","Druk","Zeer druk","Afgesloten"],VKC=["#34c759","#ff9f0a","#ff3b30","#8e8e93"];
+function vkEst(ts){var d=new Date(ts),day=d.getDay(),t=d.getHours()+d.getMinutes()/60;
+  if(day===0||day===6)return 0;
+  if((t>=7&&t<9.25)||(t>=16.25&&t<18.25))return 2;
+  if((t>=6.25&&t<7)||(t>=9.25&&t<10)||(t>=15&&t<16.25)||(t>=18.25&&t<19))return 1;return 0}
+function vkLoad(){api("verkeer").then(function(j){VK=j;vkDraw()}).catch(function(e){if(e&&e.message==="auth")return handleErr(e)})}
+function vkDraw(){
+  var el=$("vk");if(!el)return;
+  var live=VK&&!VK.nokey&&VK.wegen&&VK.wegen.length,h='';
+  if(live){h+='<div class="vkr">'+VK.wegen.map(function(w){var n=w.fout?3:w.niveau;return'<span class="vkc"><i style="background:'+(w.fout?"#c7c7cc":VKC[n])+'"></i>'+esc(w.naam)+' <b>'+(w.fout?"onbekend":VKN[n].toLowerCase())+'</b></span>'}).join("")+'</div>'}
+  else{var e0=vkEst(Date.now());h+='<div class="vkr"><span class="vkc"><i style="background:'+VKC[e0]+'"></i>Johannes Geradtsweg · N525 · Kamerlingh Onnesweg: <b>verwacht '+VKN[e0].toLowerCase()+'</b></span></div>'}
+  var ev=((AG&&AG.events)||[]).filter(function(e){return!e.allDay&&e.s>Date.now()-900000&&new Date(e.s).toDateString()===new Date().toDateString()})[0];
+  if(ev){var tm=new Date(ev.s).toLocaleTimeString("nl-NL",{hour:"2-digit",minute:"2-digit"}),arr=ev.s-1800000,lv=vkEst(arr);
+    if(live&&ev.s-Date.now()<3600000){lv=Math.max.apply(null,VK.wegen.map(function(w){return w.fout?0:w.niveau}))}
+    h+='<div class="vkn"><i style="background:'+VKC[lv]+'"></i>Eerste afspraak <b>'+tm+'</b> · onderweg verwacht <b>'+VKN[lv].toLowerCase()+'</b></div>'}
   el.innerHTML=h}
 function agLoad(fresh){
   var c=cget("ag");if(c&&!fresh)agDraw(c);
@@ -843,7 +871,7 @@ function agDraw(j){
     if(key!==last){last=key;h+='<div class="evd">'+(key===tod?"Vandaag":key===tom?"Morgen":d.toLocaleDateString("nl-NL",{weekday:"long",day:"numeric",month:"long"}))+'</div>'}
     var tm=e.allDay?"Hele dag":d.toLocaleTimeString("nl-NL",{hour:"2-digit",minute:"2-digit"})+(e.e>e.s?" – "+new Date(e.e).toLocaleTimeString("nl-NL",{hour:"2-digit",minute:"2-digit"}):"");
     h+='<div class="ev'+(!e.allDay&&e.s<=now&&e.e>=now?" now":"")+'"><div class="tm">'+tm+'</div><div><b>'+esc(e.title)+'</b>'+(e.loc?'<div class="mut">'+esc(e.loc)+'</div>':'')+'</div></div>'});
-  el.innerHTML=h;
+  el.innerHTML=h;vkDraw();
   $("agr").onclick=function(){agLoad(true)};
   $("agx").onclick=function(){if(confirm("Agenda ontkoppelen?"))api("clearCalendar").then(function(r){AG=r;cset("ag",r);agDraw(r)}).catch(function(e){toast(scriptMsg(e),"err")})}}
 
