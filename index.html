@@ -3,96 +3,146 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Retouri</title>
+<title>Assiapp</title>
 <link rel="preconnect" href="https://script.google.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&display=swap" media="print" onload="this.media='all'">
 <style>
-:root{--bg:#eef2f7;--panel:#fff;--ink:#0b1d33;--mut:#566679;--line:#d5dde7;--acc:#0a4fd6;--acc-ink:#fff;--brand:#06224a;--brand2:#00a3e0;--ok:#0f8a4b;--okbg:#e2f5ea;--wait:#8a5a00;--waitbg:#fff1d2;--bad:#c62828}
-@media (prefers-color-scheme:dark){:root{--bg:#0b131d;--panel:#14202e;--ink:#e8eef3;--mut:#93a1ae;--line:#26354a;--acc:#4da3ff;--acc-ink:#04101f;--brand:#041326;--brand2:#2cb8ee;--ok:#46d489;--okbg:#14301f;--wait:#ffcf66;--waitbg:#3a2d0c;--bad:#ff7b7b}}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.45 Archivo,system-ui,-apple-system,"Segoe UI",sans-serif;padding-bottom:env(safe-area-inset-bottom,0px)}
-header.brand{background:linear-gradient(135deg,var(--brand),#0b3a82);color:#fff;border-bottom:4px solid var(--brand2);padding:calc(10px + env(safe-area-inset-top,0px)) 16px 12px}
+:root{--bg:#f3f5fa;--panel:#fff;--ink:#101828;--mut:#667085;--line:#e4e8f0;--acc:#1457ff;--acc2:#4b8bff;--acc-ink:#fff;--ok:#0e9f58;--okbg:#e6f6ee;--wait:#a15c00;--waitbg:#fff4de;--bad:#d92d20;--brand:#0b1f44;--brand2:#2b8cff;--sh:0 1px 2px rgba(16,24,40,.06),0 6px 20px rgba(16,24,40,.06);--r:18px}
+@media (prefers-color-scheme:dark){:root{--bg:#0a0f18;--panel:#121a27;--ink:#eef2f8;--mut:#93a0b4;--line:#223046;--acc:#5b94ff;--acc2:#7fb0ff;--acc-ink:#06101f;--ok:#4cd28d;--okbg:#10301f;--wait:#ffcf66;--waitbg:#352a0e;--bad:#ff8a80;--brand:#e8eefc;--brand2:#5b94ff;--sh:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35)}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+header.brand{position:sticky;top:0;z-index:12;background:color-mix(in srgb,var(--panel) 82%,transparent);-webkit-backdrop-filter:saturate(180%) blur(16px);backdrop-filter:saturate(180%) blur(16px);border-bottom:1px solid var(--line);padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px}
 header.brand .in{max-width:780px;margin:0 auto;display:flex;align-items:center;gap:12px}
-header.brand img{height:52px;width:auto;max-width:90px;object-fit:contain;background:#fff;border-radius:10px;padding:2px}
 header.brand .tt{flex:1;min-width:0}
-header.brand h1{margin:0;font-size:1.6rem;letter-spacing:.02em;color:#fff}
-header.brand h1 b{color:var(--brand2)}
-header.brand .co{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:#a9c4e8;font-weight:600}
-header.brand .sub{color:#c9dcf5;margin:4px 0 0;font-size:.82rem}
-header.brand button{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.35)}
-.panel{border-top:3px solid var(--brand2)}
-h2{color:var(--brand)}
-@media (prefers-color-scheme:dark){h2{color:var(--brand2)}}
-main{max-width:780px;margin:0 auto;padding:16px}
+header.brand h1{margin:0;font-size:1.45rem;font-weight:800;letter-spacing:-.02em;color:var(--ink);line-height:1.1}
+header.brand h1 b{background:linear-gradient(135deg,var(--acc),var(--brand2));-webkit-background-clip:text;background-clip:text;color:transparent}
+header.brand .co{display:inline-block;margin-left:8px;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);font-weight:700;vertical-align:middle}
+header.brand .sub{color:var(--mut);margin:3px 0 0;font-size:.8rem;line-height:1.3}
+main{max-width:780px;margin:0 auto;padding:16px 16px 90px}
 h1{font-size:1.5rem;font-weight:800;margin:4px 0 2px}
-h2{font-size:1.15rem;margin:0 0 4px}
+h2{font-size:1.15rem;font-weight:750;margin:0 0 4px;letter-spacing:-.01em}
 .sub,.mut{color:var(--mut);font-size:.9rem}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+.panel{background:var(--panel);border-radius:var(--r);box-shadow:var(--sh);padding:16px;margin-bottom:14px}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
-button,.btn{font:600 .95rem Archivo,system-ui,sans-serif;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:10px 14px;border-radius:8px;cursor:pointer;min-height:44px;display:inline-flex;align-items:center}
-button.pri,.btn.pri{background:var(--acc);font-weight:800;color:var(--acc-ink);border-color:var(--acc)}
-button:focus-visible,input:focus-visible,select:focus-visible,.btn:focus-within{outline:3px solid var(--acc);outline-offset:2px}
-input[type=text],input[type=search],input[type=password]{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-height:44px;width:100%}
-select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-height:44px;max-width:100%}
+button,.btn{font:600 .95rem -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;border:0;background:color-mix(in srgb,var(--ink) 7%,var(--panel));color:var(--ink);padding:10px 16px;border-radius:12px;cursor:pointer;min-height:44px;display:inline-flex;align-items:center;transition:transform .08s,filter .15s}
+button:active,.btn:active{transform:scale(.97)}
+button.pri,.btn.pri{background:linear-gradient(135deg,var(--acc),var(--acc2));color:var(--acc-ink);font-weight:700;box-shadow:0 4px 14px color-mix(in srgb,var(--acc) 35%,transparent)}
+header.brand button{min-height:36px;padding:6px 12px;font-size:.85rem}
+button:focus-visible,input:focus-visible,select:focus-visible,.btn:focus-within{outline:3px solid color-mix(in srgb,var(--acc) 55%,transparent);outline-offset:2px}
+input[type=text],input[type=search],input[type=password],select{font:inherit;color:var(--ink);background:color-mix(in srgb,var(--ink) 5%,var(--panel));border:1.5px solid transparent;border-radius:12px;padding:10px 14px;min-height:46px;width:100%;transition:border-color .15s,background .15s}
+select{width:auto;max-width:100%}
+input[type=text]:focus,input[type=search]:focus,input[type=password]:focus,select:focus{border-color:var(--acc);background:var(--panel)}
 .grow{flex:1 1 160px}
-.bar{height:10px;border-radius:5px;background:var(--line);overflow:hidden;margin:8px 0 4px;display:flex}
-.bar i{display:block;height:100%;transition:width .25s}
-.b1{background:var(--ok)}.b2{background:#e0a100}
-.stat{display:flex;justify-content:space-between;color:var(--mut);font-size:.9rem;gap:8px;flex-wrap:wrap}
+.bar{height:12px;border-radius:6px;background:color-mix(in srgb,var(--ink) 9%,var(--panel));overflow:hidden;margin:10px 0 6px;display:flex}
+.bar i{display:block;height:100%;transition:width .35s cubic-bezier(.2,.8,.2,1)}
+.b1{background:linear-gradient(90deg,var(--ok),#34d399)}.b2{background:linear-gradient(90deg,#f5a524,#fbbf24)}
+.stat{display:flex;justify-content:space-between;color:var(--mut);font-size:.88rem;gap:8px;flex-wrap:wrap}
 ul{list-style:none;margin:0;padding:0}
-li.it{display:flex;gap:12px;align-items:center;padding:12px 6px;border-bottom:1px solid var(--line)}
-li.it:last-child{border-bottom:0}
-li.it input{width:26px;height:26px;flex:none;accent-color:var(--ok)}
+li.it{display:flex;gap:14px;align-items:center;padding:14px;margin:0 0 8px;border-radius:14px;background:color-mix(in srgb,var(--ink) 3.5%,var(--panel));border-left:4px solid transparent;content-visibility:auto;contain-intrinsic-size:auto 76px}
+li.it input{width:28px;height:28px;flex:none;accent-color:var(--ok)}
 li.it .t{flex:1;min-width:0}
-li.it .c{font-weight:800;font-size:1.02rem;word-break:break-word}
-li.it .d2{color:var(--ink);font-size:.9rem}
-li.it .d{color:var(--mut);font-size:.9rem}
+li.it .c{font-weight:750;font-size:1.02rem;word-break:break-word;letter-spacing:-.005em}
+li.it .d2{color:var(--ink);opacity:.85;font-size:.9rem}
+li.it .d{color:var(--mut);font-size:.82rem;margin-top:2px}
 li.it .n{font-size:.85rem;color:var(--wait)}
-li.it.done{background:var(--okbg)}
-li.it.done .c{text-decoration:line-through;color:var(--mut)}
-li.it.wait{background:var(--waitbg)}
-li.it.stay{background:var(--bg)}
-li.it.flash{outline:3px solid var(--acc)}
+li.it.done{background:var(--okbg);border-left-color:var(--ok)}
+li.it.done .c{text-decoration:line-through;opacity:.65}
+li.it.wait{background:var(--waitbg);border-left-color:#f5a524}
+li.it.stay{opacity:.8;border-left-color:var(--mut)}
+li.it.flash{outline:3px solid var(--acc);outline-offset:-1px}
 .qty{font-weight:800;white-space:nowrap}
-.step{display:flex;align-items:center;gap:4px}
-.step .sm{margin:0;min-width:40px;min-height:40px;justify-content:center;font-size:1.1rem}
-.step button:disabled{opacity:.35}
-.tag{display:inline-block;font-size:.8rem;font-weight:600;border-radius:6px;padding:1px 8px;margin:3px 4px 0 0;background:var(--waitbg);color:var(--wait)}
+.step{display:flex;align-items:center;gap:6px}
+.step .sm{margin:0;min-width:40px;min-height:40px;justify-content:center;font-size:1.15rem;border-radius:20px;padding:0}
+.step button:disabled{opacity:.3}
+.tag{display:inline-block;font-size:.75rem;font-weight:700;border-radius:999px;padding:2px 10px;margin:4px 4px 0 0;background:var(--waitbg);color:var(--wait)}
 .tag.ok{background:var(--okbg);color:var(--ok)}
-.tag.bad{background:var(--waitbg);color:var(--bad);display:block;margin-right:0}
-.tag.stay{background:var(--line);color:var(--ink)}
+.tag.bad{background:var(--waitbg);color:var(--bad);display:block;margin-right:0;border-radius:12px;padding:8px 10px}
+.tag.stay{background:color-mix(in srgb,var(--ink) 10%,var(--panel));color:var(--ink)}
 .x{border:0;background:none;color:var(--mut);padding:6px;min-height:36px}
-#toast{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;margin-bottom:10px;padding:10px 14px;border-radius:8px;font-weight:600;display:none}
-#toast.ok{display:block;background:var(--okbg);color:var(--ok)}
-#toast.err{display:block;background:var(--panel);color:var(--bad);border:1px solid var(--bad)}
-video{width:100%;border-radius:8px;background:#000;max-height:50vh;object-fit:cover}
-.hide{display:none}
-#top{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:15;width:52px;height:52px;border-radius:26px;background:var(--brand);color:#fff;border:2px solid var(--brand2);font-size:1.4rem;justify-content:center;padding:0;box-shadow:0 3px 10px rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .2s}
-#top.show{opacity:1;pointer-events:auto}
+#toast{position:fixed;left:50%;transform:translateX(-50%);top:calc(70px + env(safe-area-inset-top,0px));z-index:40;max-width:min(92vw,560px);padding:11px 18px;border-radius:999px;font-weight:650;font-size:.92rem;display:none;box-shadow:0 8px 28px rgba(16,24,40,.28);text-align:center}
+#toast.ok{display:block;background:#0e9f58;color:#fff}
+#toast.err{display:block;background:#d92d20;color:#fff}
+video{width:100%;border-radius:14px;background:#000;max-height:50vh;object-fit:cover}
+.hide{display:none!important}
 input[type=file]{position:absolute;opacity:0;width:1px;height:1px}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
+.modal{position:fixed;inset:0;background:rgba(10,15,24,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
 .modal .box p{white-space:pre-line}
-.modal .box{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;max-width:420px;width:100%}
-.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.modal .box{background:var(--panel);border-radius:22px;padding:22px;max-width:440px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
 table.ov{width:100%;border-collapse:collapse;font-size:.9rem}
-table.ov td{text-align:left;padding:6px 4px;border-bottom:1px solid var(--line)}
-.sm{min-height:34px;padding:4px 10px;font-size:.85rem;margin:4px 6px 4px 0}
-.proj{display:flex;gap:10px;align-items:center;padding:12px 4px;border-bottom:1px solid var(--line);cursor:pointer}
+table.ov td{text-align:left;padding:8px 4px;border-bottom:1px solid var(--line)}
+.sm{min-height:34px;padding:4px 12px;font-size:.85rem;margin:4px 6px 4px 0}
+.proj{display:flex;gap:10px;align-items:center;padding:14px 8px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:12px;transition:background .15s}
+.proj:active{background:color-mix(in srgb,var(--ink) 5%,var(--panel))}
 .proj:last-child{border-bottom:0}
 .proj .t{flex:1;min-width:0}
-.form{display:grid;gap:10px;max-width:360px}
-label.l{font-weight:600;font-size:.9rem}
-.usr{padding:12px 0;border-bottom:1px solid var(--line)}
+.form{display:grid;gap:10px;max-width:380px}
+label.l{font-weight:650;font-size:.88rem}
+.usr{padding:14px 0;border-bottom:1px solid var(--line)}
 .usr:last-child{border-bottom:0}
 .perm{display:flex;gap:8px;align-items:center;min-height:34px}
 .perm input{width:20px;height:20px;accent-color:var(--acc)}
 summary{cursor:pointer;font-weight:600}
+#menu{min-width:40px;padding:6px 10px;font-size:1.2rem;min-height:38px}
+#nav{position:fixed;z-index:30;top:0;bottom:0;left:0;width:260px;background:var(--panel);box-shadow:var(--sh);transform:translateX(-105%);transition:transform .22s cubic-bezier(.2,.8,.2,1);display:block}
+#nav.hide{display:none!important}
+#nav .nb{display:flex;flex-direction:column;height:100%;padding:calc(18px + env(safe-area-inset-top,0px)) 14px calc(16px + env(safe-area-inset-bottom,0px))}
+#nav .logo{font-size:1.5rem;font-weight:800;letter-spacing:-.02em;padding:4px 10px 18px}
+#nav .logo b,header.brand h1 b{background:linear-gradient(135deg,var(--acc),var(--brand2));-webkit-background-clip:text;background-clip:text;color:transparent}
+#navlinks{flex:1}
+#navlinks a{display:flex;align-items:center;gap:12px;padding:13px 14px;margin-bottom:4px;border-radius:14px;color:var(--ink);text-decoration:none;font-weight:650;font-size:1rem}
+#navlinks a .ic{font-size:1.25rem;width:26px;text-align:center}
+#navlinks a.on{background:color-mix(in srgb,var(--acc) 13%,var(--panel));color:var(--acc)}
+#navout{width:100%;justify-content:center}
+#navbg{position:fixed;inset:0;z-index:25;background:rgba(10,15,24,.45);opacity:0;pointer-events:none;transition:opacity .2s}
+body.nav-open #nav{transform:none}
+body.nav-open #navbg{opacity:1;pointer-events:auto}
+@media (min-width:1000px){body.nav-on #nav{transform:none}body.nav-on #navbg{display:none}body.nav-on header.brand,body.nav-on main{margin-left:260px}body.nav-on #menu{display:none}body.nav-on header.brand .in,body.nav-on main{max-width:820px}}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;margin:0 -2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;border-radius:999px;padding:9px 16px;min-height:40px;font-weight:650;background:color-mix(in srgb,var(--ink) 7%,var(--panel));color:var(--ink);white-space:nowrap}
+.tab.on{background:linear-gradient(135deg,var(--acc),var(--acc2));color:var(--acc-ink)}
+.tab.add{background:none;border:1.5px dashed var(--mut);color:var(--mut)}
+.post{padding:14px 0;border-bottom:1px solid var(--line)}
+.post:last-child{border-bottom:0}
+.post .meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.82rem;color:var(--mut);margin-bottom:6px}
+.post .meta b{color:var(--ink);font-size:.92rem}
+.post .txt{white-space:pre-wrap;word-break:break-word}
+.post .rep{margin:10px 0 0 14px;padding-left:12px;border-left:3px solid var(--line)}
+.post .rep .txt{font-size:.95rem}
+.sk{display:inline-block;font-size:.72rem;font-weight:750;border-radius:999px;padding:2px 9px;text-transform:uppercase;letter-spacing:.04em;background:color-mix(in srgb,var(--ink) 9%,var(--panel));color:var(--ink)}
+.sk.tip{background:var(--okbg);color:var(--ok)}.sk.bevinding{background:var(--waitbg);color:var(--wait)}.sk.mening{background:color-mix(in srgb,var(--acc) 15%,var(--panel));color:var(--acc)}
+textarea{font:inherit;color:var(--ink);background:color-mix(in srgb,var(--ink) 5%,var(--panel));border:1.5px solid transparent;border-radius:12px;padding:10px 14px;width:100%;min-height:90px;resize:vertical}
+textarea:focus{border-color:var(--acc);background:var(--panel);outline:none}
+.hero{font-size:1.5rem;font-weight:800;letter-spacing:-.02em;margin:2px 0 2px}
+.wx{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.wx .big{font-size:3rem;line-height:1}
+.wx .tmp{font-size:2.4rem;font-weight:800;letter-spacing:-.03em}
+.hrs{display:flex;gap:6px;overflow-x:auto;margin-top:12px;scrollbar-width:none}
+.hrs::-webkit-scrollbar{display:none}
+.hr{flex:none;text-align:center;min-width:58px;padding:8px 6px;border-radius:12px;background:color-mix(in srgb,var(--ink) 4%,var(--panel));font-size:.82rem}
+.hr .e{font-size:1.3rem}
+.days{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.dy{padding:10px;border-radius:12px;background:color-mix(in srgb,var(--ink) 4%,var(--panel));font-size:.85rem}
+.warn{margin-top:10px;padding:8px 12px;border-radius:12px;background:var(--waitbg);color:var(--wait);font-weight:650;font-size:.88rem}
+.evd{font-size:.78rem;font-weight:750;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 4px}
+.ev{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+.ev:last-child{border-bottom:0}
+.ev .tm{flex:none;width:122px;font-weight:700;font-size:.9rem}
+.ev.now{background:color-mix(in srgb,var(--acc) 9%,var(--panel));border-radius:10px;padding-left:8px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:14px}
+.tile{display:block;text-align:left;padding:18px;border-radius:var(--r);background:var(--panel);box-shadow:var(--sh);color:var(--ink);text-decoration:none;font-weight:700;min-height:0}
+.tile .ic{font-size:1.8rem;display:block;margin-bottom:6px}
+.tile .mut{font-weight:400;display:block}
+#top{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:15;width:50px;height:50px;border-radius:25px;background:var(--panel);color:var(--ink);font-size:1.3rem;justify-content:center;padding:0;box-shadow:0 6px 20px rgba(16,24,40,.28);opacity:0;pointer-events:none;transition:opacity .2s}
+#top.show{opacity:1;pointer-events:auto}
 </style>
 </head>
 <body>
-<header class="brand"><div class="in"><img id="logo" src="logo.png" alt="NEP The Netherlands"><div class="tt"><h1>Retour<b>i</b></h1><div class="co">NEP The Netherlands</div><p class="sub" id="who">Laden…</p></div><button id="out" class="hide">Uitloggen</button></div></header>
+<header class="brand"><div class="in"><button id="menu" class="hide" type="button" aria-label="Menu openen">☰</button><div class="tt"><h1>Assi<b>app</b><span class="co">NEP The Netherlands</span></h1><p class="sub" id="who">Laden…</p></div><button id="out" class="hide">Uitloggen</button></div></header>
+<nav id="nav" class="hide" aria-label="Hoofdmenu"><div class="nb"><div class="logo">Assi<b>app</b></div><div id="navlinks"></div><button id="navout" type="button">Uitloggen</button></div></nav>
+<div id="navbg"></div>
 <button id="top" aria-label="Naar boven" type="button">↑</button>
 <main>
 <div id="toast" role="status" aria-live="polite"></div>
@@ -100,8 +150,6 @@ summary{cursor:pointer;font-weight:600}
 </main>
 
 <script>
-(function(){var n=["logo.png","LOGO-NEP.png","LOGO-NEP.PNG","logo-nep.png","Logo.png","logo.PNG","logo.jpg","logo.jpeg","logo.JPG","logo.svg","logo.webp","nep-logo.png","NEP.png","nep.png"],i=0,im=document.getElementById("logo");
-  if(!im)return;im.onerror=function(){i++;if(i<n.length)im.src=n[i]+"?v=2";else im.remove()};im.src=n[0]+"?v=2"})();
 /* ===== VUL DIT IN (zie README.md) ===== */
 var API_URL="https://script.google.com/macros/s/AKfycbxTRTePUvdtyvWWLOXaprklpm3C5SWaI5QVzNDsGwJcXHlQCRTZDDQLmiaJDs1bfQBc/exec"; /* de Web-app-URL van je Apps Script, eindigt op /exec */
 /* ====================================== */
@@ -125,7 +173,7 @@ function can(p){return owner||!!(my.perms&&my.perms[p])}
 function whoText(){
   if(!acct)return;
   var n=load_("retourAcctName")||"jij";
-  $("who").textContent=owner?"Ingelogd als "+n+" (beheerder). Alleen vinkjes van beheerders tellen als bevestigd.":"Ingelogd als "+n+". Jouw scans zijn zichtbaar voor de beheerder."}
+  $("who").textContent="Ingelogd als "+n+(owner?" (beheerder)":"")}
 function setMe(m){
   if(!m)return;
   my=m;owner=m.role==="beheerder";store("retourMe",JSON.stringify(m));
@@ -138,7 +186,7 @@ function cwipe(){try{Object.keys(localStorage).forEach(function(k){if(k.indexOf(
 function clearAuth(){cwipe();acct=false;owner=false;my={role:"",perms:{}};uid="";sess="";mid="";meSig="";lastInvite=null;
   ["retourUid","retourSess","retourMe","retourAcctName"].forEach(function(k){store(k,null)})}
 function onLogin(j){
-  acct=true;uid=j.uid;sess=j.session;mid="u_"+uid;store("retourUid",uid);store("retourSess",sess);store("retourAcctName",j.name);
+  acct=true;uid=j.uid;sess=j.session;mid="u_"+uid;store("retourSetupDone","1");store("retourUid",uid);store("retourSess",sess);store("retourAcctName",j.name);
   meSig="";setMe(j.me);go()}
 
 /* ---------- Verbinding met het script ---------- */
@@ -156,9 +204,12 @@ function errText(e){var m=String(e&&e.message||e);
 function scriptMsg(err){return err&&err.name==="Error"?err.message:errText(err)}
 function parseRoute(){var h=location.hash.slice(1);
   if(h==="beheer")return{k:"admin",pid:""};
+  if(h==="retour")return{k:"retour",pid:""};
+  if(h==="blog"||h.indexOf("blog/")===0)return{k:"blog",pid:"",klus:h.slice(5)};
   if(h.charAt(0)==="i"){var b=h.slice(1).split(".");return{k:"invite",pid:"",uid:b[0],token:b[1]||""}}
   if(h.charAt(0)==="j"){var a=h.slice(1).split(".");return{k:"join",pid:a[0],token:a[1]||""}}
   if(h.charAt(0)==="p")return{k:"owner",pid:h.slice(1)};return{k:"home",pid:""}}
+var kindOf={home:"home",retour:"retour",owner:"retour",admin:"admin",blog:"blog"};
 function curPid(){return parseRoute().pid}
 function getP(pid){return cur&&cur.pid===pid?cur.P:null}
 
@@ -199,6 +250,8 @@ function stayRest(pid,undo){
   if(undo)return go();
   if(!c)return toast("Alles is al afgevinkt","ok");
   modal("Rest laten staan?",c+" artikelen ("+u+" stuks) zijn niet afgevinkt en blijven staan. Je kunt dit later ongedaan maken.",[{t:"Annuleren"},{t:"Laten staan",pri:true,fn:go}])}
+var RETENTIE=14;
+function daysLeft(created){var d=RETENTIE-Math.floor((Date.now()-Number(created))/86400000);return d<=0?"vandaag":"over "+d+(d===1?" dag":" dagen")}
 function fmtDT(ts){var d=new Date(Number(ts));return d.toLocaleDateString("nl-NL",{day:"numeric",month:"long",year:"numeric"})+" "+d.toLocaleTimeString("nl-NL",{hour:"2-digit",minute:"2-digit"})}
 function finishProject(pid){
   var P=cur.P,open=[],units=0,waiting=0,o={};
@@ -334,17 +387,20 @@ function renderNow(){
   if(acct){
     if(r.k==="owner"){if(cur&&cur.pid===r.pid)renderProject(cur.pid,cur.P);return}
     if(r.k==="admin"&&owner)return renderAdmin();
-    return renderHome()}
+    if(r.k==="blog")return renderBlog();
+    if(r.k==="retour")return renderHome();
+    return renderStart()}
   if(cur)renderProject(cur.pid,cur.P)
 }
 function renderHome(){
   var ids=plist.slice().sort(function(a,b){return b.created-a.created});
   var h="";
-  if(can("import")||owner)h+='<section class="panel"><div class="row"><label class="btn pri">Nieuw project: retourlijst(en) kiezen<input type="file" id="pdf" accept="application/pdf" multiple></label>'+(owner?'<button data-go="beheer">Gebruikers beheren</button>':'')+'</div><p class="mut" style="margin:10px 0 0">Kies één of meer pdf’s. Alle gekozen lijsten komen in hetzelfde project.</p></section>';
+  h+='<div class="hero">Retour</div>';
+  if(can("import")||owner)h+='<section class="panel"><div class="row"><label class="btn pri">Nieuw project: retourlijst(en) kiezen<input type="file" id="pdf" accept="application/pdf" multiple></label>'+'</div><p class="mut" style="margin:10px 0 0">Kies één of meer pdf’s. Alle gekozen lijsten komen in hetzelfde project.</p></section>';
   h+='<section class="panel">';
   if(!ids.length)h+='<p class="mut" style="margin:0">'+(can("import")?"Nog geen projecten. Kies een pdf om te beginnen.":"Er zijn nog geen projecten.")+'</p>';
   ids.forEach(function(p){
-    h+='<div class="proj" data-open="'+p.id+'"><div class="t"><h2>'+esc(p.title)+'</h2><div class="mut">'+p.done+" van "+p.total+' bevestigd'+(p.lists.length>1?" · "+p.lists.length+" lijsten":"")+(p.closed?" · afgerond":"")+'</div></div>'+(can("verwijderen")?'<button class="x" data-delp="'+p.id+'" aria-label="Project verwijderen">✕</button>':'')+'</div>'});
+    h+='<div class="proj" data-open="'+p.id+'"><div class="t"><h2>'+esc(p.title)+'</h2><div class="mut">'+p.done+" van "+p.total+' bevestigd'+(p.lists.length>1?" · "+p.lists.length+" lijsten":"")+(p.closed?" · afgerond":"")+' · wordt '+daysLeft(p.created)+' verwijderd</div></div>'+(can("verwijderen")?'<button class="x" data-delp="'+p.id+'" aria-label="Project verwijderen">✕</button>':'')+'</div>'});
   $("app").innerHTML=h+'</section>';
   var f=$("pdf");if(f)f.addEventListener("change",function(e){var fl=Array.prototype.slice.call(e.target.files);e.target.value="";importFiles(fl,null)});
 }
@@ -361,7 +417,7 @@ function renderProject(pid,P){
     '<div id="camwrap" class="hide" style="margin-top:10px"><video id="vid" playsinline muted></video><div class="row" style="margin-top:8px"><button id="camstop">Camera sluiten</button><button id="torch" class="hide" type="button">Zaklamp aan</button><span class="mut" id="camnote"></span></div></div></section>'+
     '<section class="panel"><div class="bar"><i class="b1" id="f1"></i><i class="b2" id="f2"></i></div><div class="stat"><span id="cnt"></span><span id="wt"></span></div>'+
     '<div class="row" style="margin:12px 0"><input type="search" id="q" class="grow" placeholder="Zoek in lijst"><select id="lst" class="hide" aria-label="Filter op retourlijst"></select><button id="fAll">Alles</button><button id="fOpen">Open</button><button id="fDone">Afgevinkt</button></div><ul id="list"></ul></section>';
-    if($("back"))$("back").onclick=function(){stopCam();location.hash=""};
+    if($("back"))$("back").onclick=function(){stopCam();location.hash="#retour"};
     if($("cplnk"))$("cplnk").onclick=function(){var i=$("lnk");i.select();try{navigator.clipboard.writeText(i.value).then(function(){toast("Link gekopieerd","ok")},function(){toast("Selecteer de link en kopieer handmatig","err")})}catch(e){toast("Selecteer de link en kopieer handmatig","err")}};
     if($("addpdf"))$("addpdf").addEventListener("change",function(e){var fl=Array.prototype.slice.call(e.target.files);e.target.value="";importFiles(fl,pid)});
     if($("stay")){$("fin").onclick=function(){finishProject(pid)};$("stay").onclick=function(){stayRest(pid,false)};$("unstay").onclick=function(){stayRest(pid,true)};$("ov").onclick=function(){ovOpen=!ovOpen;render()}}
@@ -379,6 +435,8 @@ function renderProject(pid,P){
   }
   $("ptitle").textContent=P.title;
   var cl=!!P.closed;
+  if(P.created&&!$("ret")){var rt=document.createElement("div");rt.id="ret";rt.className="mut";rt.style.cssText="margin:-2px 0 10px";$("ptitle").insertAdjacentElement("afterend",rt)}
+  if($("ret"))$("ret").textContent="Deze retourlijst wordt "+daysLeft(P.created)+" automatisch verwijderd.";
   $("scanpanel").classList.toggle("hide",cl);
   if($("addlbl"))$("addlbl").classList.toggle("hide",cl);
   if(owner){$("stay").classList.toggle("hide",cl);$("fin").classList.toggle("hide",cl)}
@@ -441,7 +499,7 @@ function renderAdmin(){
       Object.keys(PERM_LABELS).forEach(function(k){h+='<label class="perm"><input type="checkbox" data-perm="'+k+'"'+(u.perms.indexOf(k)>=0?' checked':'')+'><span>'+PERM_LABELS[k]+'</span></label>'});h+='</div>'}
     h+='<div class="row" style="margin-top:6px"><button class="sm" data-ua="reset|'+u.id+'">'+(u.status==="actief"?"Wachtwoord resetten":"Nieuwe uitnodigingslink")+'</button>'+(u.status==="actief"?'<button class="sm" data-ua="revoke|'+u.id+'">Toegang intrekken</button>':'')+'<button class="sm" data-ua="del|'+u.id+'">Verwijderen</button></div></div>'});
   $("app").innerHTML=h+'</section>';
-  $("back").onclick=function(){location.hash=""};
+  $("back").onclick=function(){location.hash="#home"};
   $("invf").onsubmit=function(e){e.preventDefault();var n=$("inm").value.trim();if(!n)return;
     api("invite",{name:n}).then(function(j){lastInvite={name:n,link:inviteLink(j.id,j.token)};return load()}).catch(function(err){toast(scriptMsg(err),"err")})};
   var c=$("cpinv");if(c)c.onclick=function(){var i=$("invlnk");i.select();try{navigator.clipboard.writeText(i.value).then(function(){toast("Link gekopieerd","ok")},function(){toast("Selecteer de link en kopieer handmatig","err")})}catch(e){toast("Selecteer de link en kopieer handmatig","err")}}}
@@ -567,7 +625,9 @@ function showLogin(msg){
   if(msg)toast(msg,"err");
   $("af").onsubmit=function(e){e.preventDefault();
     api("userLogin",{username:$("un").value,password:$("pw2").value},true).then(onLogin).catch(function(er){console.error(er);toast(er.message==="auth"?"Gebruikersnaam of wachtwoord klopt niet, of je toegang is ingetrokken.":scriptMsg(er),"err")})};
+  if(load_("retourSetupDone"))return;
   api("status",{},true).then(function(st){
+    if(!st.needsSetup)store("retourSetupDone","1");
     if(acct||!st.needsSetup||!$("setupbox"))return;
     $("setupbox").innerHTML='<section class="panel"><h2>Eerste keer: maak het beheerdersaccount aan</h2><form class="form" id="sf"><label class="l" for="sc">Installatiecode (SETUP_CODE uit het script)</label><input type="password" id="sc" autocomplete="off" required><label class="l" for="sn">Jouw naam</label><input type="text" id="sn" autocomplete="name" required><label class="l" for="su">Gebruikersnaam</label><input type="text" id="su" autocomplete="username" autocapitalize="none" autocorrect="off" required><label class="l" for="sp">Wachtwoord (minimaal 8 tekens)</label><input type="password" id="sp" autocomplete="new-password" minlength="8" required><button class="pri" type="submit">Beheerdersaccount aanmaken</button></form></section>';
     $("sf").onsubmit=function(e){e.preventDefault();
@@ -587,7 +647,7 @@ function showAccept(r){
     }).catch(function(err){console.error(err);toast(err.message==="auth"?"Deze uitnodiging is niet meer geldig. Vraag de beheerder om een nieuwe.":scriptMsg(err),"err")})}}
 function applyState(j){
   if(j.me)setMe(j.me);
-  var P={title:j.project.title,token:j.project.token,closed:j.project.closed||0,items:j.items,done:j.done||{},extra:j.extra||{},stay:j.stay||{}};
+  var P={title:j.project.title,token:j.project.token,closed:j.project.closed||0,created:j.project.created,items:j.items,done:j.done||{},extra:j.extra||{},stay:j.stay||{}};
   cur={pid:j.project.id,P:P};members=j.members||{};
   if(owner){marks=j.marks||{};myMarks={}}else{marks={};myMarks=(j.marks&&j.marks[mid])||{}}
   lastV=j.v;ready=true;render()}
@@ -597,30 +657,174 @@ function handleErr(e){
     if(acct){clearAuth();$("out").classList.add("hide");$("app").innerHTML="";return showLogin("Je sessie is verlopen of je toegang is ingetrokken. Log opnieuw in.")}
     store("mid_"+r.pid,null);mid="";$("app").innerHTML='<div class="panel"><p>Deze link is niet meer geldig of je toegang is ingetrokken. Vraag de beheerder om een nieuwe link.</p></div>';return}
   toast(errText(e),"err")}
+var pfBusy=0;
+/* Op de achtergrond alvast de recentste projecten ophalen, zodat openen direct gaat. */
+async function prefetch(){
+  if(pfBusy||!acct)return;pfBusy=1;
+  try{var todo=plist.slice().sort(function(a,b){return b.created-a.created}).slice(0,4);
+    for(var i=0;i<todo.length;i++){if(parseRoute().k==="owner"||document.hidden)break;
+      var st=await api("state",{pid:todo[i].id});cset("p"+todo[i].id,st)}}catch(e){}
+  pfBusy=0}
 async function load(){
   var r=parseRoute();
   try{
     if(acct&&r.k!=="owner"){
+      if(r.k==="home"){ready=true;render();return}
+      if(r.k==="blog"){await loadBlog();return}
       if(r.k==="admin"&&owner){users=(await api("users")).users;ready=true;render();return}
       if(!ready){var c=cget("list");if(c){plist=c;ready=true;render()}}
-      var j=await api("list");setMe(j.me);plist=j.projects;lastV=j.v;ready=true;cset("list",plist);render()}
+      var j=await api("list");setMe(j.me);plist=j.projects;lastV=j.v;ready=true;cset("list",plist);render();idle(prefetch)}
     else if(r.pid){
       if(!ready){var c2=cget("p"+r.pid);if(c2)applyState(c2)}
       var st=await api("state",{pid:r.pid});applyState(st);cset("p"+r.pid,st)}
   }catch(e){handleErr(e)}}
+
+/* ---------- Menu ---------- */
+var NAV=[["home","🏠","Home","#home"],["retour","📦","Retour","#retour"],["blog","💬","Blog","#blog"],["admin","👥","Gebruikers","#beheer"]];
+function navRender(){
+  var k=kindOf[parseRoute().k]||"home",h="";
+  NAV.forEach(function(n){if(n[0]==="admin"&&!owner)return;h+='<a href="'+n[3]+'" class="'+(n[0]===k?"on":"")+'"><span class="ic">'+n[1]+'</span>'+n[2]+'</a>'});
+  $("navlinks").innerHTML=h}
+function navShow(on){
+  $("nav").classList.toggle("hide",!on);$("menu").classList.toggle("hide",!on);
+  document.body.classList.toggle("nav-on",!!on);if(!on)document.body.classList.remove("nav-open");
+  if(on)navRender()}
+$("menu").onclick=function(){document.body.classList.toggle("nav-open")};
+$("navbg").onclick=function(){document.body.classList.remove("nav-open")};
+$("nav").addEventListener("click",function(e){if(e.target.closest&&e.target.closest("a"))document.body.classList.remove("nav-open")});
+$("navout").onclick=function(){document.body.classList.remove("nav-open");clearAuth();go()};
+
+/* ---------- Home: agenda en weer ---------- */
+var WX_LAT=52.231,WX_LON=5.173,AG=null;
+var WMO={0:["☀️","Helder"],1:["🌤️","Overwegend helder"],2:["⛅","Half bewolkt"],3:["☁️","Bewolkt"],45:["🌫️","Mist"],48:["🌫️","Rijpmist"],51:["🌦️","Lichte motregen"],53:["🌦️","Motregen"],55:["🌧️","Zware motregen"],56:["🌧️","Ijzel"],57:["🌧️","Ijzel"],61:["🌧️","Lichte regen"],63:["🌧️","Regen"],65:["🌧️","Zware regen"],66:["🌧️","Ijsregen"],67:["🌧️","Ijsregen"],71:["🌨️","Lichte sneeuw"],73:["🌨️","Sneeuw"],75:["❄️","Zware sneeuw"],77:["🌨️","Sneeuwkorrels"],80:["🌦️","Lichte buien"],81:["🌦️","Buien"],82:["⛈️","Zware buien"],85:["🌨️","Sneeuwbuien"],86:["🌨️","Zware sneeuwbuien"],95:["⛈️","Onweer"],96:["⛈️","Onweer met hagel"],99:["⛈️","Zwaar onweer met hagel"]};
+function wmo(c){return WMO[c]||["🌡️","Onbekend"]}
+function renderStart(){
+  var n=(load_("retourAcctName")||"").split(" ")[0],hr=new Date().getHours(),g=hr<6?"Goedenacht":hr<12?"Goedemorgen":hr<18?"Goedemiddag":"Goedenavond";
+  if(!$("wx")){
+    $("app").innerHTML='<div class="hero" id="hello"></div><div class="mut" id="today" style="margin-bottom:14px"></div>'+
+    '<section class="panel" id="wx"><h2>Weer Mediapark Hilversum</h2><div class="mut">Laden…</div></section>'+
+    '<section class="panel" id="ag"><h2>Mijn agenda</h2><div class="mut">Laden…</div></section>'+
+    '<div class="tiles"><a class="tile" href="#retour"><span class="ic">📦</span>Retour<span class="mut" id="tr">Retourlijsten scannen en afvinken</span></a><a class="tile" href="#blog"><span class="ic">💬</span>Blog<span class="mut" id="tb">Tips en bevindingen per klus</span></a></div>';
+    wxLoad();agLoad(false);
+    idle(function(){api("list").then(function(j){plist=j.projects;cset("list",plist);var o=plist.filter(function(p){return!p.closed}).length;if($("tr"))$("tr").textContent=o+(o===1?" lopend project":" lopende projecten");prefetch()}).catch(function(){})});
+    api("blog").then(function(j){if($("tb"))$("tb").textContent=j.klussen.length+(j.klussen.length===1?" klus":" klussen")+" met tips en bevindingen"}).catch(function(){})}
+  $("hello").textContent=g+(n?", "+n:"");
+  $("today").textContent=new Date().toLocaleDateString("nl-NL",{weekday:"long",day:"numeric",month:"long"})}
+function wxLoad(){
+  var c=null;try{c=JSON.parse(localStorage.getItem("assiWx")||"null")}catch(e){}
+  if(c)wxDraw(c.d);
+  if(c&&Date.now()-c.t<900000)return;
+  fetch("https://api.open-meteo.com/v1/forecast?latitude="+WX_LAT+"&longitude="+WX_LON+"&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_gusts_10m,precipitation&hourly=temperature_2m,precipitation_probability,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset&timezone=Europe%2FAmsterdam&forecast_days=4&wind_speed_unit=kmh")
+    .then(function(r){return r.json()}).then(function(d){try{localStorage.setItem("assiWx",JSON.stringify({t:Date.now(),d:d}))}catch(e){}wxDraw(d)})
+    .catch(function(){if(!c&&$("wx"))$("wx").innerHTML='<h2>Weer Mediapark Hilversum</h2><div class="mut">Het weer kon niet worden opgehaald.</div>'})}
+function wxDraw(d){
+  var el=$("wx");if(!el||!d.current)return;
+  var cu=d.current,w=wmo(cu.weather_code),h='<h2>Weer Mediapark Hilversum</h2><div class="wx"><div class="big">'+w[0]+'</div><div><div class="tmp">'+Math.round(cu.temperature_2m)+'°</div><div class="mut">'+w[1]+' · voelt als '+Math.round(cu.apparent_temperature)+'°</div></div><div class="mut" style="margin-left:auto;text-align:right">Wind '+Math.round(cu.wind_speed_10m)+' km/u<br>Vlagen '+Math.round(cu.wind_gusts_10m)+' km/u</div></div>';
+  var warn=[];
+  if(cu.wind_gusts_10m>=50)warn.push("Veel wind: let op bij buiten werken en opbouw");
+  var hs=d.hourly,now=Date.now(),idx=[],i;
+  for(i=0;i<hs.time.length&&idx.length<8;i++){if(new Date(hs.time[i]).getTime()>=now-1800000)idx.push(i)}
+  if(idx.some(function(i){return hs.precipitation_probability[i]>=60}))warn.push("Kans op regen de komende uren");
+  if(cu.temperature_2m<=1)warn.push("Vorstkans: let op gladheid");
+  if(warn.length)h+='<div class="warn">⚠️ '+warn.join(" · ")+'</div>';
+  h+='<div class="hrs">'+idx.map(function(i){var t=new Date(hs.time[i]);return'<div class="hr"><div>'+String(t.getHours()).padStart(2,"0")+':00</div><div class="e">'+wmo(hs.weather_code[i])[0]+'</div><b>'+Math.round(hs.temperature_2m[i])+'°</b><div class="mut">'+(hs.precipitation_probability[i]||0)+'%</div></div>'}).join("")+'</div>';
+  var dd=d.daily;h+='<div class="days">'+[1,2,3].map(function(i){var t=new Date(dd.time[i]);return'<div class="dy"><b>'+t.toLocaleDateString("nl-NL",{weekday:"short",day:"numeric"})+'</b><br>'+wmo(dd.weather_code[i])[0]+' '+Math.round(dd.temperature_2m_max[i])+'° / '+Math.round(dd.temperature_2m_min[i])+'°<br><span class="mut">regen '+(dd.precipitation_probability_max[i]||0)+'%</span></div>'}).join("")+'</div>';
+  h+='<div class="mut" style="margin-top:10px;font-size:.78rem">Bron: Open-Meteo · zon op '+dd.sunrise[0].slice(11)+' · onder '+dd.sunset[0].slice(11)+'</div>';
+  el.innerHTML=h}
+function agLoad(fresh){
+  var c=cget("ag");if(c&&!fresh)agDraw(c);
+  api("agenda",{fresh:!!fresh}).then(function(j){AG=j;cset("ag",j);agDraw(j)}).catch(function(e){if(e&&e.message==="auth")return handleErr(e);if(!c&&$("ag"))$("ag").innerHTML='<h2>Mijn agenda</h2><div class="mut">'+esc(scriptMsg(e))+'</div>'})}
+function agDraw(j){
+  var el=$("ag");if(!el)return;
+  if(!j.linked){
+    el.innerHTML='<h2>Mijn agenda</h2><p class="mut" style="margin-top:0">Koppel je agenda om hier je afspraken van de komende dagen te zien. Je plakt daarvoor een geheime agenda-link (iCal). Dit werkt met Google Agenda, Outlook en Apple Agenda.</p>'+
+    '<details style="margin:8px 0"><summary>Waar vind ik die link?</summary><div class="mut" style="margin-top:8px"><b>Google Agenda</b> (op een computer of via de desktopsite): Instellingen → kies je agenda → <i>Agenda integreren</i> → kopieer het <i>Geheime adres in iCal-indeling</i>.<br><br><b>Outlook</b>: Instellingen → Agenda → Gedeelde agenda\'s → <i>Een agenda publiceren</i> → kies je agenda en <i>Alle details</i> → kopieer de <i>ICS</i>-link.<br><br>Deel de link met niemand: wie hem heeft, kan je agenda lezen.</div></details>'+
+    '<div class="row"><input type="text" id="agurl" class="grow" placeholder="https://… of webcal://…" autocapitalize="none" autocorrect="off"><button class="pri" id="agset">Koppelen</button></div>';
+    $("agset").onclick=function(){var u=$("agurl").value.trim();if(!u)return;$("agset").disabled=true;$("agset").textContent="Bezig…";
+      api("setCalendar",{url:u}).then(function(r){AG=r;cset("ag",r);agDraw(r);toast("Agenda gekoppeld","ok")}).catch(function(e){if(e&&e.message==="auth")return handleErr(e);$("agset").disabled=false;$("agset").textContent="Koppelen";toast(scriptMsg(e),"err")})};
+    return}
+  var ev=(j.events||[]).filter(function(e){return e.e>=Date.now()-1800000||e.s>Date.now()}),h='<div class="head"><h2>Mijn agenda</h2><div><button class="sm" id="agr">Ververs</button><button class="sm" id="agx">Ontkoppelen</button></div></div>';
+  if(j.error)h+='<div class="warn">'+esc(j.error)+'</div>';
+  if(!ev.length&&!j.error)h+='<div class="mut">Geen afspraken de komende dagen.</div>';
+  var last="",now=Date.now();
+  ev.forEach(function(e){
+    var d=new Date(e.s),key=d.toDateString(),tod=new Date().toDateString(),tom=new Date(Date.now()+86400000).toDateString();
+    if(key!==last){last=key;h+='<div class="evd">'+(key===tod?"Vandaag":key===tom?"Morgen":d.toLocaleDateString("nl-NL",{weekday:"long",day:"numeric",month:"long"}))+'</div>'}
+    var tm=e.allDay?"Hele dag":d.toLocaleTimeString("nl-NL",{hour:"2-digit",minute:"2-digit"})+(e.e>e.s?" – "+new Date(e.e).toLocaleTimeString("nl-NL",{hour:"2-digit",minute:"2-digit"}):"");
+    h+='<div class="ev'+(!e.allDay&&e.s<=now&&e.e>=now?" now":"")+'"><div class="tm">'+tm+'</div><div><b>'+esc(e.title)+'</b>'+(e.loc?'<div class="mut">'+esc(e.loc)+'</div>':'')+'</div></div>'});
+  el.innerHTML=h;
+  $("agr").onclick=function(){agLoad(true)};
+  $("agx").onclick=function(){if(confirm("Agenda ontkoppelen?"))api("clearCalendar").then(function(r){AG=r;cset("ag",r);agDraw(r)}).catch(function(e){toast(scriptMsg(e),"err")})}}
+
+/* ---------- Blog ---------- */
+var blog={klussen:[]},bposts=[],blogV="",bShown="",bOpenRep="",bDraft={},bAdd=false;
+function ago(t){var s=Math.max(0,(Date.now()-t)/1000);if(s<60)return"zojuist";if(s<3600)return Math.floor(s/60)+" min geleden";if(s<86400)return Math.floor(s/3600)+" uur geleden";if(s<604800)return Math.floor(s/86400)+" dg geleden";return new Date(t).toLocaleDateString("nl-NL",{day:"numeric",month:"short"})}
+async function loadBlog(){
+  var r=parseRoute(),kl=r.klus;
+  if(!ready){var c=cget("blog");if(c){blog=c;if(kl){var cp=cget("bp"+kl);bposts=cp?cp.posts:[]}ready=true;render()}}
+  var res=await Promise.all([api("blog"),kl?api("blogPosts",{klus:kl}):Promise.resolve(null)]);
+  blog=res[0];blogV=blog.v;cset("blog",blog);
+  if(kl&&res[1]){bposts=res[1].posts;cset("bp"+kl,res[1])}else bposts=[];
+  ready=true;render()}
+function postHtml(p,reps){
+  var mine=p.uid===uid||owner;
+  var h='<div class="post" id="po'+p.id+'"><div class="meta"><b>'+esc(p.naam)+'</b><span class="sk '+esc(p.soort)+'">'+esc(p.soort)+'</span><span>'+ago(p.tijd)+'</span>'+(mine?'<button class="x" data-delpost="'+p.id+'" aria-label="Verwijderen">✕</button>':'')+'</div><div class="txt">'+esc(p.tekst)+'</div>';
+  reps.forEach(function(r){h+='<div class="rep"><div class="meta"><b>'+esc(r.naam)+'</b><span>'+ago(r.tijd)+'</span>'+((r.uid===uid||owner)?'<button class="x" data-delpost="'+r.id+'" aria-label="Verwijderen">✕</button>':'')+'</div><div class="txt">'+esc(r.tekst)+'</div></div>'});
+  h+='<div style="margin-top:8px">'+(bOpenRep===p.id?'<textarea id="rt" data-draft="'+p.id+'" placeholder="Schrijf een reactie"></textarea><div class="btns" style="margin-top:8px"><button class="pri sm" data-sendrep="'+p.id+'">Reageer</button><button class="sm" data-closerep="1">Annuleren</button></div>':'<button class="sm" data-rep="'+p.id+'">Reageer</button>')+'</div></div>';
+  return h}
+function renderBlog(){
+  var r=parseRoute(),kl=r.klus,cur_=blog.klussen.find(function(k){return k.id===kl});
+  if(!$("btabs")){$("app").innerHTML='<div class="hero">Blog</div><div class="mut" style="margin-bottom:10px">Tips, bevindingen en opmerkingen per klus. Reageer gerust op elkaar.</div><div class="tabs" id="btabs"></div><div id="bnew"></div><div id="bmain"></div>';bShown=""}
+  var tabs=blog.klussen.slice().sort(function(a,b){return(b.last||b.created)-(a.last||a.created)}).map(function(k){return'<button class="tab'+(k.id===kl?" on":"")+'" data-klus="'+k.id+'">'+esc(k.naam)+(k.posts?' <span style="opacity:.7;margin-left:4px">'+k.posts+'</span>':'')+'</button>'}).join("")+'<button class="tab add" id="addk">＋ Nieuwe klus</button>';
+  if($("btabs").getAttribute("data-h")!==tabs){$("btabs").innerHTML=tabs;$("btabs").setAttribute("data-h",tabs);$("addk").onclick=function(){bAdd=!bAdd;renderBlog()}}
+  var nb=$("bnew");
+  if(bAdd&&!nb.firstChild){nb.innerHTML='<section class="panel"><b>Nieuwe klus toevoegen</b><div class="row" style="margin-top:8px"><input type="text" id="knm" class="grow" placeholder="Naam van de klus, bijvoorbeeld ‘Concert Ahoy 12 dec’" maxlength="60"><button class="pri" id="kadd">Toevoegen</button></div></section>';
+    $("kadd").onclick=function(){var v=$("knm").value.trim();if(v.length<2)return toast("Geef de klus een naam","err");$("kadd").disabled=true;
+      api("addKlus",{naam:v}).then(function(j){bAdd=false;bShown="";location.hash="#blog/"+j.id;load()}).catch(function(e){$("kadd").disabled=false;toast(scriptMsg(e),"err")})};
+    setTimeout(function(){$("knm").focus()},50)}
+  if(!bAdd&&nb.firstChild)nb.innerHTML="";
+  var m=$("bmain");
+  if(!kl||!cur_){
+    var h="";
+    if(!blog.klussen.length)h='<section class="panel"><p class="mut" style="margin:0">Nog geen klussen. Voeg met ‘＋ Nieuwe klus’ de eerste toe en plaats een tip of bevinding.</p></section>';
+    else h='<section class="panel"><p class="mut" style="margin:0">Kies hierboven een klus om de berichten te lezen en te reageren.'+(kl?" Deze klus bestaat niet (meer).":"")+'</p></section>';
+    if(bShown!=="L"+h){m.innerHTML=h;bShown="L"+h}return}
+  if(bShown.indexOf("K"+kl)!==0){
+    m.innerHTML='<section class="panel"><div class="head"><h2>'+esc(cur_.naam)+'</h2>'+(owner?'<button class="x" data-delklus="'+kl+'" aria-label="Klus verwijderen">Klus verwijderen</button>':'')+'</div>'+
+    '<div class="row"><select id="bsoort" aria-label="Soort bericht"><option value="tip">Tip</option><option value="bevinding">Bevinding</option><option value="opmerking">Opmerking</option><option value="mening">Mening</option></select></div>'+
+    '<textarea id="btxt" data-draft="new" placeholder="Wat wil je delen met collega\'s?" style="margin-top:8px"></textarea><div class="btns" style="margin-top:8px"><button class="pri" id="bsend">Plaatsen</button></div></section><section class="panel" id="bposts"></section>';
+    $("btxt").value=bDraft["new"]||"";
+    $("bsend").onclick=function(){var t=$("btxt").value.trim();if(!t)return toast("Schrijf eerst iets","err");$("bsend").disabled=true;
+      api("addPost",{klus:kl,tekst:t,soort:$("bsoort").value}).then(function(){bDraft["new"]="";$("btxt").value="";$("bsend").disabled=false;load()}).catch(function(e){$("bsend").disabled=false;toast(scriptMsg(e),"err")})};
+    bShown="K"+kl+"|"}
+  var tops=bposts.filter(function(p){return!p.parent}).sort(function(a,b){return b.tijd-a.tijd}),
+      html=tops.length?tops.map(function(p){return postHtml(p,bposts.filter(function(x){return x.parent===p.id}))}).join(""):'<p class="mut" style="margin:0">Nog geen berichten bij deze klus. Plaats de eerste!</p>';
+  var key="K"+kl+"|"+html+"|"+bOpenRep;
+  if(bShown!==key){$("bposts").innerHTML=html;bShown=key;var rt=$("rt");if(rt){rt.value=bDraft[rt.getAttribute("data-draft")]||"";}}}
+document.addEventListener("input",function(e){var d=e.target.getAttribute&&e.target.getAttribute("data-draft");if(d)bDraft[d]=e.target.value});
+document.addEventListener("click",function(e){
+  var t=e.target;if(!t.getAttribute)return;
+  var k=t.closest&&t.closest("[data-klus]");if(k){bAdd=false;bShown="";location.hash="#blog/"+k.getAttribute("data-klus");return}
+  var rp=t.getAttribute("data-rep");if(rp){bOpenRep=rp;bShown+="*";renderBlog();var x=$("rt");if(x)x.focus();return}
+  if(t.getAttribute("data-closerep")){bOpenRep="";renderBlog();return}
+  var sr=t.getAttribute("data-sendrep");if(sr){var v=($("rt")||{}).value||"";if(!v.trim())return toast("Schrijf eerst iets","err");t.disabled=true;
+    api("addPost",{klus:parseRoute().klus,tekst:v,soort:"opmerking",parent:sr}).then(function(){bDraft[sr]="";bOpenRep="";load()}).catch(function(er){t.disabled=false;toast(scriptMsg(er),"err")});return}
+  var dp=t.getAttribute("data-delpost");if(dp){if(confirm("Bericht verwijderen? Reacties daarop verdwijnen ook.")){bposts=bposts.filter(function(p){return p.id!==dp&&p.parent!==dp});renderBlog();api("deletePost",{id:dp}).then(function(){load()}).catch(function(er){toast(scriptMsg(er),"err");load()})}return}
+  var dk=t.getAttribute("data-delklus");if(dk){if(confirm("Deze klus met alle berichten verwijderen?"))api("deleteKlus",{id:dk}).then(function(){bShown="";location.hash="#blog";load()}).catch(function(er){toast(scriptMsg(er),"err")});return}
+});
 function go(){
   stopCam();cur=null;marks={};members={};myMarks={};lastV="";ready=false;$("app").innerHTML="";
   var r=parseRoute();
-  $("out").classList.toggle("hide",!acct);
+  $("out").classList.add("hide");navShow(false);
   if(r.k==="invite")return showAccept(r);
   if(!acct){
     if(r.k==="join"){mid=load_("mid_"+r.pid);if(!mid)return showName(r);
       $("who").textContent="Je doet mee via een deellink. Jouw scans zijn zichtbaar voor de beheerder.";return load()}
     return showLogin()}
-  whoText();
+  whoText();navShow(true);
   if(r.k==="join"){location.hash="#p"+r.pid;return}
-  if(r.k==="admin"&&!owner){location.hash="";return}
-  load()}
+  if(r.k==="admin"&&!owner){location.hash="#home";return}
+  bShown="";load()}
 
 document.addEventListener("click",function(e){
   var t=e.target;if(!t.getAttribute)return;
@@ -646,9 +850,10 @@ $("out").onclick=function(){clearAuth();go()};
 /* Elke 6 seconden kijken of er iets veranderd is (alleen als de pagina zichtbaar is). */
 setInterval(function(){
   if(document.hidden||pending>0||!ready)return;
-  var r=parseRoute();if(r.k==="admin"||r.k==="invite")return;
-  var key=(acct&&r.k!=="owner")?"_all":r.pid;if(!key)return;
-  api("version",{key:key},true).then(function(j){if(j.v!==lastV&&pending===0)load()}).catch(function(){})},6000);
+  var r=parseRoute();if(r.k==="admin"||r.k==="invite"||r.k==="home")return;
+  var key=r.k==="blog"?"blog":(acct&&r.k!=="owner")?"_all":r.pid;if(!key)return;
+  var cmp=r.k==="blog"?blogV:lastV;
+  api("version",{key:key},true).then(function(j){if(j.v!==cmp&&pending===0)load()}).catch(function(){})},6000);
 
 /* Start: opgeslagen sessie hergebruiken */
 if(load_("retourSess")&&load_("retourUid")){
