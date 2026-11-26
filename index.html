@@ -488,15 +488,17 @@ function renderProject(pid,P){
 var PERM_LABELS={import:"Retourlijsten importeren (nieuwe projecten en lijsten toevoegen)",delen:"Deellink van een project zien en delen",verwijderen:"Projecten verwijderen"};
 function inviteLink(id,token){return location.href.split("#")[0]+"#i"+id+"."+token}
 function renderAdmin(){
-  var stat={uitgenodigd:"Uitnodiging open",actief:"Actief",ingetrokken:"Ingetrokken"};
+  var stat={uitgenodigd:"Uitnodiging open",actief:"Actief",ingetrokken:"Ingetrokken",aanvraag:"Wacht op goedkeuring"};
   var h='<div class="row" style="margin-bottom:12px"><button id="back">← Home</button></div><h2>Gebruikers</h2>'+
     '<section class="panel"><form id="invf" class="row"><input type="text" id="inm" class="grow" placeholder="Naam van de collega" required><button class="pri" type="submit">Uitnodiging maken</button></form><p class="mut" style="margin:8px 0 0">Je krijgt een link die je zelf appt of mailt. De collega kiest daarmee een gebruikersnaam en wachtwoord. Daarna stel je hieronder de rechten in.</p>';
   if(lastInvite)h+='<div class="panel" style="margin:12px 0 0"><b>Uitnodiging voor '+esc(lastInvite.name)+'</b><div class="row" style="margin-top:8px"><input type="text" id="invlnk" class="grow" readonly value="'+esc(lastInvite.link)+'" aria-label="Uitnodigingslink"><button id="cpinv">Kopieer link</button></div></div>';
   h+='</section><section class="panel">';
   if(!users.length)h+='<p class="mut" style="margin:0">Nog geen gebruikers.</p>';
-  users.forEach(function(u){
+  users.slice().sort(function(a,b){return(b.status==="aanvraag")-(a.status==="aanvraag")}).forEach(function(u){
+    if(u.status==="aanvraag"){h+='<div class="usr" style="background:var(--waitbg);border-radius:12px;padding:12px;margin-bottom:8px"><div><b>'+esc(u.name)+'</b> <span class="tag">Wacht op goedkeuring</span>'+(u.functie?' <span class="tag stay">'+esc(u.functie)+'</span>':'')+'</div><div class="mut">'+esc(u.username)+'</div><div class="row" style="margin-top:8px"><button class="pri sm" data-ua="approve|'+u.id+'">Goedkeuren</button><button class="sm" data-ua="reject|'+u.id+'">Afwijzen</button></div></div>';return}
     var adm=u.role==="beheerder",sen=u.role==="senior",lock=adm&&!isAdmin;
     h+='<div class="usr" data-uid="'+u.id+'"><div><b>'+esc(u.name)+'</b> <span class="tag'+(u.status==="actief"?" ok":"")+'">'+esc(stat[u.status]||u.status)+'</span>'+(u.functie?' <span class="tag stay">'+esc(u.functie)+'</span>':'')+'</div>'+(u.username?'<div class="mut">'+esc(u.username)+'</div>':'')+
+      '<div class="row" style="margin-top:8px"><label class="l" for="fn'+u.id+'">Functie</label>'+fnSelect("fn"+u.id,u.functie).replace("<select ","<select data-fn=\"1\" ").replace(" required","").replace(' style="width:100%"',"")+'</div>'+
       '<div class="row" style="margin-top:8px"><label class="l" for="rl'+u.id+'">Rol</label>'+(lock?'<span>Beheerder (alleen een beheerder kan dit aanpassen)</span>':'<select id="rl'+u.id+'" data-role="1"><option value="medewerker"'+(adm||sen?'':' selected')+'>Medewerker</option><option value="senior"'+(sen?' selected':'')+'>Senior (bijna alle rechten)</option>'+(isAdmin?'<option value="beheerder"'+(adm?' selected':'')+'>Beheerder (alle rechten)</option>':'')+'</select>')+'</div>';
     if(adm)h+='<p class="mut" style="margin:6px 0 0">Beheerders kunnen alles, ook toegang intrekken en personen verwijderen.</p>';
     else if(sen)h+='<p class="mut" style="margin:6px 0 0">Senioren kunnen alles wat een beheerder kan, behalve toegang intrekken, wachtwoorden resetten en personen verwijderen.</p>';
@@ -516,6 +518,8 @@ function saveRights(row){
 function userAction(act,id){
   var u=users.find(function(x){return x.id===id}),nm=u?u.name:"";
   var run=function(action,data,after){api(action,data).then(function(j){if(after)after(j);return load()}).catch(function(err){toast(scriptMsg(err),"err")})};
+  if(act==="approve")return run("approveUser",{uid:id},function(){toast(nm+" is goedgekeurd","ok")});
+  if(act==="reject"){if(confirm("Aanvraag van "+nm+" afwijzen?"))run("rejectUser",{uid:id});return}
   if(act==="reset")return run("resetUser",{uid:id},function(j){lastInvite={name:nm,link:inviteLink(j.id,j.token)}});
   if(act==="revoke"){if(confirm("Toegang van "+nm+" intrekken? Diegene kan dan niet meer inloggen."))run("revokeUser",{uid:id});return}
   if(act==="del"){if(confirm(nm+" verwijderen? De scans blijven bewaard."))run("deleteUser",{uid:id})}}
@@ -630,6 +634,12 @@ function fnSelect(id,sel){return'<select id="'+id+'" required style="width:100%"
 function showLogin(msg){
   stopCam();$("who").textContent="Log in om te beginnen.";
   $("app").innerHTML='<div id="setupbox"></div><section class="panel"><h2>Inloggen</h2><form class="form" id="af"><label class="l" for="un">Gebruikersnaam</label><input type="text" id="un" autocomplete="username" autocapitalize="none" autocorrect="off" required><label class="l" for="pw2">Wachtwoord</label><input type="password" id="pw2" autocomplete="current-password" required><button class="pri" type="submit">Inloggen</button></form></section>';
+  var rg=document.createElement("section");rg.className="panel";
+  rg.innerHTML='<details id="regd"><summary>Nog geen account? Vraag er een aan</summary><form class="form" id="rf" style="margin-top:12px"><label class="l" for="rn">Jouw naam</label><input type="text" id="rn" autocomplete="name" required><label class="l" for="rfn">Jouw functie</label>'+fnSelect("rfn")+'<label class="l" for="ru">Kies een gebruikersnaam</label><input type="text" id="ru" autocomplete="username" autocapitalize="none" autocorrect="off" required><label class="l" for="rp">Kies een wachtwoord (minimaal 8 tekens)</label><input type="password" id="rp" autocomplete="new-password" minlength="8" required><p class="mut" style="margin:0">Een beheerder moet je aanvraag eerst goedkeuren voordat je kunt inloggen.</p><button class="pri" type="submit">Account aanvragen</button></form></details>';
+  $("app").appendChild(rg);
+  $("rf").onsubmit=function(e){e.preventDefault();var b=$("rf").querySelector("button");b.disabled=true;
+    api("register",{name:$("rn").value,functie:$("rfn").value,username:$("ru").value,password:$("rp").value},true).then(function(){
+      rg.innerHTML='<h2>Aanvraag verstuurd</h2><p class="mut" style="margin:0">Je kunt inloggen zodra een beheerder je account heeft goedgekeurd. Gebruik dan de gebruikersnaam en het wachtwoord die je net hebt gekozen.</p>'}).catch(function(er){b.disabled=false;toast(scriptMsg(er),"err")})};
   if(msg)toast(msg,"err");
   $("af").onsubmit=function(e){e.preventDefault();
     api("userLogin",{username:$("un").value,password:$("pw2").value},true).then(onLogin).catch(function(er){console.error(er);toast(er.message==="auth"?"Gebruikersnaam of wachtwoord klopt niet, of je toegang is ingetrokken.":scriptMsg(er),"err")})};
@@ -719,6 +729,7 @@ function renderStart(){
     idle(function(){api("list").then(function(j){plist=j.projects;cset("list",plist);var o=plist.filter(function(p){return!p.closed}).length;if($("tr"))$("tr").textContent=o+(o===1?" lopend project":" lopende projecten");prefetch()}).catch(function(){})});
     api("blog").then(function(j){if($("tb"))$("tb").textContent=j.klussen.length+(j.klussen.length===1?" klus":" klussen")+" met tips en bevindingen"}).catch(function(){})}
   $("hello").textContent=g+(n?", "+n:"");
+  if(owner&&!$("apb"))api("users").then(function(j){var n=j.users.filter(function(u){return u.status==="aanvraag"}).length;if(n&&!$("apb")&&$("today")){var b=document.createElement("section");b.className="panel";b.id="apb";b.style.background="var(--waitbg)";b.innerHTML='<b>'+n+(n===1?" accountaanvraag wacht":" accountaanvragen wachten")+' op goedkeuring</b><div class="btns"><a class="btn pri" href="#beheer">Bekijken</a></div>';$("today").insertAdjacentElement("afterend",b)}}).catch(function(){});
   if(!my.functie&&!$("fnb")){var fb=document.createElement("section");fb.className="panel";fb.id="fnb";fb.innerHTML='<b>Kies je functie</b><p class="mut" style="margin:4px 0 8px">Zo zien collega\'s wie je bent.</p><div class="row">'+fnSelect("fnb2")+'<button class="pri" id="fnb3">Opslaan</button></div>';$("today").insertAdjacentElement("afterend",fb);
     $("fnb3").onclick=function(){var v=$("fnb2").value;if(!v)return;api("setFunctie",{functie:v}).then(function(){my.functie=v;store("retourMe",JSON.stringify(my));whoText();fb.remove();toast("Functie opgeslagen","ok")}).catch(function(e){toast(scriptMsg(e),"err")})}}
   $("today").textContent=new Date().toLocaleDateString("nl-NL",{weekday:"long",day:"numeric",month:"long"})}
@@ -878,7 +889,8 @@ document.addEventListener("click",function(e){
   if(d){e.stopPropagation();if(confirm("Project en alle afvinkingen verwijderen?")){plist=plist.filter(function(p){return p.id!==d});render();w("deleteProject",{pid:d})}return}
   var o=t.closest&&t.closest("[data-open]");if(o)location.hash="#p"+o.getAttribute("data-open")});
 document.addEventListener("change",function(e){
-  var t=e.target;if(!t.getAttribute||!(t.hasAttribute("data-role")||t.hasAttribute("data-perm")))return;
+  var t=e.target;if(t.getAttribute&&t.hasAttribute("data-fn")){var fr=t.closest("[data-uid]");if(fr&&t.value)api("setFunctie",{uid:fr.getAttribute("data-uid"),functie:t.value}).then(function(){toast("Functie opgeslagen","ok");load()}).catch(function(er){toast(scriptMsg(er),"err");load()});return}
+  if(!t.getAttribute||!(t.hasAttribute("data-role")||t.hasAttribute("data-perm")))return;
   var row=t.closest("[data-uid]");if(row)saveRights(row)});
 window.addEventListener("hashchange",go);
 $("top").onclick=function(){window.scrollTo({top:0,behavior:"smooth"})};
