@@ -252,6 +252,7 @@ main{container-type:inline-size;container-name:mn}
 @media (max-width:420px){.hero,h1{font-size:1.9rem}.panel{padding:14px}.tab{padding:6px 10px}}
 #nav .nb{padding-left:max(14px,env(safe-area-inset-left,0px))}
 #top{right:max(16px,env(safe-area-inset-right,0px))}
+.steps{margin:0;padding-left:22px;list-style:decimal}.steps li{margin:0 0 10px;padding-left:4px}.steps li:last-child{margin-bottom:0}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -872,9 +873,6 @@ function wxDraw(d){
   if(idx.some(function(i){return hs.precipitation_probability[i]>=60}))warn.push("Kans op regen de komende uren");
   if(cu.temperature_2m<=1)warn.push("Vorstkans: let op gladheid");
   if(warn.length)h+='<div class="warn">⚠️ '+warn.join(" · ")+'</div>';
-  h+='<details class="more"><summary>Meer weer</summary><div class="hrs">'+idx.map(function(i){var t=new Date(hs.time[i]);return'<div class="hr"><div>'+String(t.getHours()).padStart(2,"0")+':00</div><div class="e">'+wmo(hs.weather_code[i])[0]+'</div><b>'+Math.round(hs.temperature_2m[i])+'°</b><div class="mut">'+(hs.precipitation_probability[i]||0)+'%</div></div>'}).join("")+'</div>';
-  var dd=d.daily;h+='<div class="days">'+[1,2,3].map(function(i){var t=new Date(dd.time[i]);return'<div class="dy"><b>'+t.toLocaleDateString("nl-NL",{weekday:"short",day:"numeric"})+'</b><br>'+wmo(dd.weather_code[i])[0]+' '+Math.round(dd.temperature_2m_max[i])+'° / '+Math.round(dd.temperature_2m_min[i])+'°<br><span class="mut">regen '+(dd.precipitation_probability_max[i]||0)+'%</span></div>'}).join("")+'</div>';
-  h+='<div class="mut" style="margin-top:10px;font-size:.78rem">Bron: Open-Meteo · zon op '+dd.sunrise[0].slice(11)+' · onder '+dd.sunset[0].slice(11)+'</div></details>';
   el.innerHTML=h;vkDraw()}
 var VK=null,VKN=["Rustig","Druk","Zeer druk","Afgesloten"],VKC=["#34c759","#ff9f0a","#ff3b30","#8e8e93"];
 function vkEst(ts){var d=new Date(ts),day=d.getDay(),t=d.getHours()+d.getMinutes()/60;
@@ -1043,10 +1041,27 @@ document.addEventListener("click",function(e){
   var dp=t.getAttribute("data-delpost");if(dp){if(confirm("Bericht verwijderen? Reacties daarop verdwijnen ook.")){bposts=bposts.filter(function(p){return p.id!==dp&&p.parent!==dp});renderBlog();api("deletePost",{id:dp}).then(function(){load()}).catch(function(er){toast(scriptMsg(er),"err");load()})}return}
   var dk=t.getAttribute("data-delklus");if(dk){if(confirm("Deze klus met alle berichten verwijderen?"))api("deleteKlus",{id:dk}).then(function(){bShown="";location.hash="#blog";load()}).catch(function(er){toast(scriptMsg(er),"err")});return}
 });
+function isStandalone(){try{return window.navigator.standalone===true||window.matchMedia("(display-mode: standalone)").matches||window.matchMedia("(display-mode: fullscreen)").matches}catch(e){return false}}
+function isMobile(){var u=navigator.userAgent||"";return /iPhone|iPad|iPod|Android/i.test(u)||(/Macintosh/.test(u)&&navigator.maxTouchPoints>1)}
+var introTab="";
+function showIntro(){
+  var ua=navigator.userAgent||"",tab=introTab||(/android/i.test(ua)?"a":"i");
+  $("who").textContent="Welkom bij Assiapp";
+  var ios='<ol class="steps"><li>Open deze pagina in <b>Safari</b>. Andere browsers werken op iPhone en iPad niet voor deze stap.</li><li>Tik onderin (iPhone) of bovenin (iPad) op het <b>Deel-icoon</b>: een vierkantje met een pijl omhoog.</li><li>Scroll in het menu en tik op <b>Zet op beginscherm</b>. Staat die niet direct in beeld? Tik eerst op <b>Meer</b>.</li><li>Laat de naam <b>Assiapp</b> staan en tik rechtsboven op <b>Voeg toe</b>.</li><li>Sluit Safari en open Assiapp voortaan via het <b>icoon op je beginscherm</b>.</li></ol>';
+  var and='<ol class="steps"><li>Open deze pagina in <b>Chrome</b>.</li><li>Tik rechtsboven op de <b>drie puntjes</b> (⋮).</li><li>Tik op <b>Toevoegen aan startscherm</b> en daarna op <b>Installeren</b> (of <b>Toevoegen</b>).</li><li>Bevestig met <b>Toevoegen</b>. Het icoon verschijnt op je startscherm.</li><li>Open Assiapp voortaan via dat <b>icoon</b>.</li></ol>';
+  $("app").innerHTML='<div class="hero">Zet Assiapp op je beginscherm</div><div class="mut" style="margin-bottom:12px">Dan werkt de app als een gewone app, zonder adresbalk, en is hij altijd één tik weg. Kies jouw toestel:</div>'+
+  '<div class="tabs"><button class="tab'+(tab==="i"?" on":"")+'" data-itab="i">iPhone / iPad</button><button class="tab'+(tab==="a"?" on":"")+'" data-itab="a">Android</button></div>'+
+  '<section class="panel">'+(tab==="i"?ios:and)+'</section>'+
+  '<div class="mut" style="margin-bottom:12px">Let op: de app op je beginscherm is een aparte plek. Je moet daar één keer opnieuw inloggen.</div>'+
+  '<div class="btns"><button class="pri" id="introgo">Ik heb hem toegevoegd, doorgaan</button><button id="introskip">Nu niet</button></div>'}
+document.addEventListener("click",function(e){var t=e.target;if(!t||!t.getAttribute)return;
+  var it=t.getAttribute("data-itab");if(it){introTab=it;showIntro();return}
+  if(t.id==="introgo"||t.id==="introskip"){store("assiIntro","1");go()}});
 function go(){
   stopCam();cur=null;marks={};members={};myMarks={};lastV="";ready=false;$("app").innerHTML="";$("app").removeAttribute("data-t");
   var r=parseRoute();
   $("out").classList.add("hide");navShow(false);
+  if(isMobile()&&!isStandalone()&&!load_("assiIntro"))return showIntro();
   if(r.k==="invite")return showAccept(r);
   if(!acct){
     if(r.k==="join"){mid=load_("mid_"+r.pid);if(!mid)return showName(r);
@@ -1093,6 +1108,20 @@ if(load_("retourSess")&&load_("retourUid")){
   try{var sm=JSON.parse(load_("retourMe")||"null");if(sm){my=sm;owner=sm.role==="beheerder"||sm.role==="senior";isAdmin=sm.role==="beheerder";meSig=JSON.stringify(sm)}}catch(e){}
 }
 go();
+
+/* Automatisch bijwerken: als er een nieuwe versie op GitHub staat, laadt de app die zelf (ook vanaf het beginscherm). */
+var BUILD="20261126215115";
+function checkUpdate(){
+  if(BUILD==="__BUILD__"||document.hidden)return;
+  fetch(location.pathname+"?u="+Date.now(),{cache:"reload"}).then(function(r){return r.text()}).then(function(t){
+    var m=/var BUILD="([^"]+)"/.exec(t);if(!m||m[1]===BUILD)return;
+    var a=document.activeElement,typing=a&&(a.tagName==="TEXTAREA"||(a.tagName==="INPUT"&&a.type!=="checkbox"&&a.value));
+    if(pending>0||typing||($("camwrap")&&!$("camwrap").classList.contains("hide")))return;
+    var k="assiReload_"+m[1];try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}
+    location.reload()}).catch(function(){})}
+setTimeout(checkUpdate,2500);
+document.addEventListener("visibilitychange",function(){if(!document.hidden)checkUpdate()});
+setInterval(checkUpdate,300000);
 })();
 </script>
 </body>
